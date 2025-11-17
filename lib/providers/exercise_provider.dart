@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
-import 'package:myapp/data/exercise_list.dart';
 import 'package:myapp/models/exercise.dart';
+import 'package:myapp/data/exercise_list.dart' as exercise_data;
 import 'package:uuid/uuid.dart';
 
 class ExerciseProvider with ChangeNotifier {
@@ -16,76 +16,17 @@ class ExerciseProvider with ChangeNotifier {
   }
 
   Future<void> _loadExercises() async {
-    // This will add each exercise if it's new, or update it if the key already exists.
-    // This ensures the local database is always in sync with the initial list.
-    for (final exercise in initialExercises) {
+    // Clear the box to ensure fresh data from the hardcoded list on every app start.
+    await _exerciseBox.clear();
+
+    // Load exercises from the static list and put them into the box.
+    for (final exercise in exercise_data.exercises) {
       await _exerciseBox.put(exercise.id, exercise);
     }
-    
+
+    // Load the fresh exercises from the box into the provider's list.
     _exercises = _exerciseBox.values.toList();
-    await _updateExistingExercises(); // Update existing exercises with new fields if necessary
     notifyListeners();
-  }
-
-  Future<void> _updateExistingExercises() async {
-    final List<Future<void>> futures = [];
-    for (final exercise in _exercises) {
-      bool needsUpdate = false;
-      Exercise updatedExercise = exercise;
-
-      if (exercise.difficulty == null || exercise.difficulty!.isEmpty) {
-        updatedExercise = Exercise(
-          id: exercise.id,
-          name: exercise.name,
-          description: exercise.description,
-          type: exercise.type,
-          muscleGroup: exercise.muscleGroup,
-          equipment: exercise.equipment,
-          measurement: exercise.measurement,
-          imageUrl: exercise.imageUrl,
-          videoUrl: exercise.videoUrl,
-          difficulty: 'Principiante',
-          beginnerSets: exercise.beginnerSets,
-          beginnerReps: exercise.beginnerReps,
-          intermediateSets: exercise.intermediateSets,
-          intermediateReps: exercise.intermediateReps,
-          advancedSets: exercise.advancedSets,
-          advancedReps: exercise.advancedReps,
-          recommendations: exercise.recommendations,
-        );
-        needsUpdate = true;
-      }
-
-      if (exercise.recommendations == null || exercise.recommendations!.isEmpty) {
-        updatedExercise = Exercise(
-          id: updatedExercise.id,
-          name: updatedExercise.name,
-          description: updatedExercise.description,
-          type: updatedExercise.type,
-          muscleGroup: updatedExercise.muscleGroup,
-          equipment: updatedExercise.equipment,
-          measurement: updatedExercise.measurement,
-          imageUrl: updatedExercise.imageUrl,
-          videoUrl: updatedExercise.videoUrl,
-          difficulty: updatedExercise.difficulty,
-          beginnerSets: updatedExercise.beginnerSets,
-          beginnerReps: updatedExercise.beginnerReps,
-          intermediateSets: updatedExercise.intermediateSets,
-          intermediateReps: updatedExercise.intermediateReps,
-          advancedSets: updatedExercise.advancedReps,
-          advancedReps: updatedExercise.advancedReps,
-          recommendations: 'Sin recomendaciones específicas.',
-        );
-        needsUpdate = true;
-      }
-
-      if (needsUpdate) {
-        futures.add(updateExercise(updatedExercise));
-      }
-    }
-    if (futures.isNotEmpty) {
-      await Future.wait(futures);
-    }
   }
 
   Future<void> addExercise(Exercise exercise) async {

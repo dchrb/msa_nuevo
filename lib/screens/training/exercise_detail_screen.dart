@@ -10,6 +10,10 @@ class ExerciseDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    // Determina si hay alguna recomendación general que mostrar.
+    final bool hasGeneralRecommendations = 
+        exercise.recommendations != null && exercise.recommendations!.trim().isNotEmpty;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(exercise.name),
@@ -52,7 +56,9 @@ class ExerciseDetailScreen extends StatelessWidget {
             _buildRecommendationsCard(theme),
             const SizedBox(height: 24),
 
-            _buildGeneralRecommendationsCard(theme),
+            // Solo muestra la tarjeta si hay recomendaciones generales.
+            if (hasGeneralRecommendations)
+              _buildGeneralRecommendationsCard(theme),
 
           ],
         ),
@@ -121,7 +127,7 @@ class ExerciseDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              exercise.recommendations ?? 'Sin recomendaciones específicas.',
+              exercise.recommendations!,
               style: theme.textTheme.bodyLarge,
             ),
           ],
