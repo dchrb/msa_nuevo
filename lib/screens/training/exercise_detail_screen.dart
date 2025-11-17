@@ -50,6 +50,10 @@ class ExerciseDetailScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             _buildRecommendationsCard(theme),
+            const SizedBox(height: 24),
+
+            _buildGeneralRecommendationsCard(theme),
+
           ],
         ),
       ),
@@ -87,7 +91,7 @@ class ExerciseDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Recomendaciones',
+              'Recomendaciones por Nivel',
               style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
@@ -101,6 +105,31 @@ class ExerciseDetailScreen extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildGeneralRecommendationsCard(ThemeData theme) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Recomendaciones Generales',
+              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              exercise.recommendations ?? 'Sin recomendaciones específicas.',
+              style: theme.textTheme.bodyLarge,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
 
   Widget _buildRecommendationRow(ThemeData theme, String level, String sets, String reps, String measurement) {
     return Row(

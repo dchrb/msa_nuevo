@@ -24,6 +24,7 @@ class _EditExerciseScreenState extends State<EditExerciseScreen> {
   late String _intermediateReps;
   late String _advancedSets;
   late String _advancedReps;
+  late String _recommendations; // Nuevo campo
 
   @override
   void initState() {
@@ -40,6 +41,7 @@ class _EditExerciseScreenState extends State<EditExerciseScreen> {
     _intermediateReps = widget.exercise?.intermediateReps ?? '';
     _advancedSets = widget.exercise?.advancedSets ?? '';
     _advancedReps = widget.exercise?.advancedReps ?? '';
+    _recommendations = widget.exercise?.recommendations ?? ''; // Inicializar
   }
 
   void _saveForm() {
@@ -61,6 +63,7 @@ class _EditExerciseScreenState extends State<EditExerciseScreen> {
         intermediateReps: _intermediateReps,
         advancedSets: _advancedSets,
         advancedReps: _advancedReps,
+        recommendations: _recommendations, // Guardar
       );
       Navigator.of(context).pop(newExercise);
     }
@@ -149,7 +152,7 @@ class _EditExerciseScreenState extends State<EditExerciseScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       DropdownButtonFormField<String>(
-                        value: _difficulty,
+                        initialValue: _difficulty,
                         decoration: const InputDecoration(labelText: 'Dificultad'),
                         items: ['Principiante', 'Intermedio', 'Avanzado']
                             .map((label) => DropdownMenuItem(
@@ -164,8 +167,15 @@ class _EditExerciseScreenState extends State<EditExerciseScreen> {
                         },
                         onSaved: (value) => _difficulty = value!,
                       ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        initialValue: _recommendations,
+                        decoration: const InputDecoration(labelText: 'Recomendaciones Generales'),
+                        maxLines: 3,
+                        onSaved: (value) => _recommendations = value ?? '',
+                      ), 
                       const SizedBox(height: 24),
-                      Text('Recomendaciones', style: theme.textTheme.titleLarge),
+                      Text('Recomendaciones por Nivel', style: theme.textTheme.titleLarge),
                       const SizedBox(height: 16),
                       // Beginner
                       Text('Principiante', style: theme.textTheme.titleMedium),

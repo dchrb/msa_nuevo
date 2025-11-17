@@ -9,6 +9,15 @@
 .history
 .svn/
 
+# IntelliJ
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Visual Studio Code
+.vscode/
+
 # Flutter/Dart
 .dart_tool/
 .flutter-plugins
@@ -17,19 +26,36 @@
 .pub-cache/
 .pub/
 /build/
+/ios/Flutter/App.framework
+/ios/Flutter/Flutter.framework
 
-# IDEs
-.idea/
-.vscode/
-*.iml
-*.ipr
-*.iws
+# Android
+/android/app/src/main/assets/flutter_assets/
+/android/app/build/
+/android/build/
+/android/.gradle/
+/android/gradle/
+/android/gradlew
+/android/gradlew.bat
+/android/local.properties
+/android/key.properties
+*.jks
 
-# Build files
-app.apk
-app.aab
-app.ipa
+# iOS
+/ios/Pods/
+/ios/Runner.xcworkspace/
+/ios/Runner/GeneratedPluginRegistrant.*
+/ios/Flutter/ephemeral/
+/ios/DerivedData/
+/ios/ServiceDefinitions.json
+/ios/Podfile.lock
 
-# Local config
-/ios/Flutter/Generated.xcconfig
-/ios/Flutter/flutter_export_environment.sh
+# Build results
+/build/
+
+# Generated code
+*.g.dart
+*.freezed.dart
+
+# Other
+pubspec.lock
