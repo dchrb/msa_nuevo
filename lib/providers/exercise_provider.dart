@@ -16,10 +16,10 @@ class ExerciseProvider with ChangeNotifier {
   }
 
   Future<void> _loadExercises() async {
-    // The box is not cleared anymore to persist user-added exercises
-    if (_exerciseBox.isEmpty) {
-      for (final exercise in exerciseList) {
-          await _exerciseBox.put(exercise.id, exercise);
+    // Check for each exercise in the predefined list and add it if it's not already in the box.
+    for (final exercise in exerciseList) {
+      if (!_exerciseBox.containsKey(exercise.id)) {
+        await _exerciseBox.put(exercise.id, exercise);
       }
     }
     
