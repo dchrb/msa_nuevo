@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:myapp/screens/dashboard_screen.dart';
 import 'package:myapp/screens/menus_screen.dart';
 import 'package:myapp/screens/progreso_screen.dart';
-import 'package:myapp/screens/training/workout_history_screen.dart'; // Import history screen
-import 'package:myapp/screens/training_screen.dart'; // Import training screen
 import 'package:myapp/widgets/drawer_menu.dart';
 
 class MainScreen extends StatefulWidget {
@@ -41,19 +39,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         return AppBar(title: const Text('Salud Activa'));
       case 1:
         return AppBar(
-          title: const Text('Entrenamiento'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.history),
-              tooltip: 'Historial de Entrenamientos',
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const WorkoutHistoryScreen()));
-              },
-            ),
-          ],
-        );
-      case 2:
-        return AppBar(
           title: const Text('Plan de Comidas'),
           bottom: TabBar(
             controller: _tabController,
@@ -63,7 +48,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             ],
           ),
         );
-      case 3:
+      case 2:
         return AppBar(
           title: const Text('Progreso'),
         );
@@ -77,7 +62,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       index: _selectedIndex,
       children: <Widget>[
         const DashboardScreen(),
-        const TrainingScreen(), // Add the new training screen
         MenusScreen(tabController: _tabController),
         const ProgresoScreen(),
       ],
@@ -96,11 +80,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             icon: Icon(Icons.home_outlined),
             activeIcon: Icon(Icons.home),
             label: 'Inicio',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.fitness_center_outlined),
-            activeIcon: Icon(Icons.fitness_center),
-            label: 'Entrenamiento',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.restaurant_menu_outlined),
