@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:myapp/data/default_routines.dart';
 import 'package:myapp/models/body_measurement.dart';
 import 'package:myapp/models/daily_meal_plan.dart';
 import 'package:myapp/models/exercise.dart';
@@ -27,7 +28,7 @@ import 'package:myapp/providers/meal_plan_provider.dart';
 import 'package:myapp/providers/routine_provider.dart';
 import 'package:myapp/providers/theme_provider.dart';
 import 'package:myapp/providers/user_provider.dart';
-import 'package:myapp/providers/workout_history_provider.dart'; // Import the new provider
+import 'package:myapp/providers/workout_history_provider.dart';
 import 'package:myapp/screens/main_screen.dart';
 import 'package:myapp/screens/profile_screen.dart';
 import 'package:myapp/screens/profile_selection_screen.dart';
@@ -37,20 +38,15 @@ import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
 void main() async {
-  // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize notification service
   await NotificationService().init();
-
   await initializeDateFormatting('es', null);
   await Hive.initFlutter();
 
-  // Register all adapters
   _registerHiveAdapters();
-
-  // Open all boxes
   await _openHiveBoxes();
+
+  createDefaultRoutines();
 
   await _populateInitialFoodData();
   await _populateInitialExerciseData();
@@ -78,7 +74,7 @@ void main() async {
         ChangeNotifierProvider(create: (context) => MealPlanProvider()),
         ChangeNotifierProvider(create: (context) => RoutineProvider()),
         ChangeNotifierProvider(create: (context) => ExerciseProvider()),
-        ChangeNotifierProvider(create: (context) => WorkoutHistoryProvider()), // Add the new provider here
+        ChangeNotifierProvider(create: (context) => WorkoutHistoryProvider()),
       ],
       child: MyApp(initialRoute: initialRoute),
     ),
@@ -86,8 +82,6 @@ void main() async {
 }
 
 void _registerHiveAdapters() {
-  // This approach ensures that adapters are only registered once.
-  // It's cleaner and avoids potential issues with hot-restarts.
   _tryRegisterAdapter(UserAdapter());
   _tryRegisterAdapter(FoodAdapter());
   _tryRegisterAdapter(WaterLogAdapter());
@@ -190,12 +184,7 @@ Future<void> _populateInitialFoodData() async {
   }
 }
 
-Future<void> _populateInitialExerciseData() async {
-  // This function is now deprecated.
-  // The ExerciseProvider and ExerciseService handle the initial population
-  // of exercises from the comprehensive list in lib/data/exercise_list.dart.
-  // Leaving this function empty prevents the creation of old, incomplete exercise data.
-}
+Future<void> _populateInitialExerciseData() async {}
 
 class MyApp extends StatelessWidget {
   final String initialRoute;
@@ -240,13 +229,11 @@ class MyApp extends StatelessWidget {
               const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
         );
 
-        // Generate the base color scheme from the seed color
         var lightColorScheme = ColorScheme.fromSeed(
           seedColor: themeProvider.seedColor,
           brightness: Brightness.light,
         );
 
-        // Force the primary color to be the vibrant seed color
         lightColorScheme = lightColorScheme.copyWith(
           primary: themeProvider.seedColor,
         );
@@ -256,12 +243,10 @@ class MyApp extends StatelessWidget {
           brightness: Brightness.dark,
         );
 
-        // Force the primary color to be the vibrant seed color
         darkColorScheme = darkColorScheme.copyWith(
           primary: themeProvider.seedColor,
         );
 
-        // Function to determine text color based on background brightness
         Color textColorForBackground(Color backgroundColor) {
           return ThemeData.estimateBrightnessForColor(backgroundColor) ==
                   Brightness.dark
@@ -278,14 +263,14 @@ class MyApp extends StatelessWidget {
           textTheme: textTheme,
           scaffoldBackgroundColor: lightColorScheme.surface,
           appBarTheme: AppBarTheme(
-            backgroundColor: lightColorScheme.primary, // Use scheme's primary color
+            backgroundColor: lightColorScheme.primary,
             foregroundColor: lightAppBarTextColor,
             elevation: 2,
             titleTextStyle:
                 textTheme.headlineSmall?.copyWith(color: lightAppBarTextColor),
           ),
           bottomNavigationBarTheme: BottomNavigationBarThemeData(
-            selectedItemColor: lightColorScheme.primary, // Use scheme's primary color
+            selectedItemColor: lightColorScheme.primary,
             unselectedItemColor: Colors.grey,
             type: BottomNavigationBarType.fixed,
             showUnselectedLabels: true,
@@ -314,7 +299,7 @@ class MyApp extends StatelessWidget {
           textTheme: textTheme,
           scaffoldBackgroundColor: darkColorScheme.surface,
           appBarTheme: AppBarTheme(
-            backgroundColor: darkColorScheme.primary, // Use scheme's primary color
+            backgroundColor: darkColorScheme.primary,
             foregroundColor: darkAppBarTextColor,
             elevation: 2,
             titleTextStyle:
@@ -322,7 +307,7 @@ class MyApp extends StatelessWidget {
           ),
           bottomNavigationBarTheme: BottomNavigationBarThemeData(
             backgroundColor: darkColorScheme.surface,
-            selectedItemColor: darkColorScheme.primary, // Use scheme's primary color
+            selectedItemColor: darkColorScheme.primary,
             unselectedItemColor: Colors.grey[400],
             type: BottomNavigationBarType.fixed,
             showUnselectedLabels: true,
