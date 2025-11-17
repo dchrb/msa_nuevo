@@ -21,7 +21,28 @@ class ExerciseProvider with ChangeNotifier {
 
     // Load exercises from the static list and put them into the box.
     for (final exercise in exercise_data.exercises) {
-      await _exerciseBox.put(exercise.id, exercise);
+      // If the exercise doesn't provide an imageUrl, use a gif asset based on its id.
+      final fallbackImage = 'assets/gifs/${exercise.id}.gif';
+      final newExercise = Exercise(
+        id: exercise.id,
+        name: exercise.name,
+        description: exercise.description,
+        type: exercise.type,
+        muscleGroup: exercise.muscleGroup,
+        equipment: exercise.equipment,
+        measurement: exercise.measurement,
+        imageUrl: exercise.imageUrl ?? fallbackImage,
+        videoUrl: exercise.videoUrl,
+        difficulty: exercise.difficulty,
+        beginnerSets: exercise.beginnerSets,
+        beginnerReps: exercise.beginnerReps,
+        intermediateSets: exercise.intermediateSets,
+        intermediateReps: exercise.intermediateReps,
+        advancedSets: exercise.advancedSets,
+        advancedReps: exercise.advancedReps,
+        recommendations: exercise.recommendations,
+      );
+      await _exerciseBox.put(newExercise.id, newExercise);
     }
 
     // Load the fresh exercises from the box into the provider's list.

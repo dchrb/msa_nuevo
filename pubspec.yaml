@@ -65,6 +65,7 @@ flutter:
     - assets/acuario/
     - assets/luna_png/
     - assets/icons/
+    - assets/gifs/
 
 flutter_launcher_icons:
   android: "launcher_icon" # Can be true or a path to the icon image
