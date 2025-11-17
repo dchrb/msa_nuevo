@@ -201,17 +201,19 @@ class CreateProfileScreenState extends State<CreateProfileScreen> {
           children: [
             const Text('Paso 3 de 3: Tu estilo de vida', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 20),
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              childAspectRatio: 2.5,
-              physics: const NeverScrollableScrollPhysics(),
+            Wrap(
+              spacing: 10.0,
+              runSpacing: 10.0,
+              alignment: WrapAlignment.center,
               children: _activityLevelOptions.entries.map((entry) {
-                return SelectionCard(
-                  title: entry.value['label'],
-                  icon: entry.value['icon'],
-                  isSelected: _activityLevel == entry.key,
-                  onTap: () => setState(() => _activityLevel = entry.key),
+                return SizedBox(
+                  width: (MediaQuery.of(context).size.width / 2) - 34,
+                  child: SelectionCard(
+                    title: entry.value['label'],
+                    icon: entry.value['icon'],
+                    isSelected: _activityLevel == entry.key,
+                    onTap: () => setState(() => _activityLevel = entry.key),
+                  ),
                 );
               }).toList(),
             ),
