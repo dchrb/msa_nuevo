@@ -21,21 +21,21 @@ class ExercisesScreen extends StatelessWidget {
     }
   }
 
-  IconData _getMuscleIcon(String muscleGroup) {
-    switch (muscleGroup) {
-      case 'Pecho':
+  IconData _getMuscleIcon(String? muscleGroup) {
+    switch (muscleGroup?.toLowerCase()) {
+      case 'pecho':
         return Icons.volunteer_activism;
-      case 'Espalda':
+      case 'espalda':
         return Icons.arrow_back_ios_new_rounded;
-      case 'Piernas':
+      case 'piernas':
         return Icons.airline_seat_legroom_normal_rounded;
-      case 'Hombros':
+      case 'hombros':
         return Icons.shield_rounded;
-      case 'Brazos':
+      case 'brazos':
         return Icons.military_tech_rounded;
-      case 'Abdominales':
+      case 'abdominales':
         return Icons.accessibility_new;
-      case 'Cuerpo Completo':
+      case 'cuerpo completo':
         return Icons.person_search_rounded;
       default:
         return Icons.fitness_center;
@@ -91,7 +91,7 @@ class ExercisesScreen extends StatelessWidget {
               ),
             ),
             title: Text(exercise.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text('${exercise.type} - ${exercise.equipment}'),
+            subtitle: Text('${exercise.type ?? 'N/A'} - ${exercise.equipment ?? 'N/A'}'),
             trailing: const Icon(Icons.chevron_right_rounded),
             onTap: () => _navigateToDetail(context, exercise),
           ),

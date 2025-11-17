@@ -54,8 +54,9 @@ class _SelectExerciseScreenState extends State<SelectExerciseScreen> {
                 final allExercises = exerciseProvider.exercises;
                 final filteredExercises = allExercises.where((exercise) {
                   final query = _searchQuery.toLowerCase();
-                  return exercise.name.toLowerCase().contains(query) ||
-                         exercise.muscleGroup.toLowerCase().contains(query);
+                  final nameMatch = exercise.name.toLowerCase().contains(query);
+                  final muscleMatch = (exercise.muscleGroup?.toLowerCase() ?? '').contains(query);
+                  return nameMatch || muscleMatch;
                 }).toList();
 
                 if (filteredExercises.isEmpty) {
@@ -70,9 +71,9 @@ class _SelectExerciseScreenState extends State<SelectExerciseScreen> {
                     final exercise = filteredExercises[index];
                     return ListTile(
                       title: Text(exercise.name),
-                      subtitle: Text('${exercise.muscleGroup} | ${exercise.equipment}'),
+                      subtitle: Text('${exercise.muscleGroup ?? 'N/A'} | ${exercise.equipment ?? 'N/A'}'),
                       onTap: () {
-                        Navigator.of(context).pop(exercise); // Return the selected exercise
+                        Navigator.of(context).pop(exercise);
                       },
                     );
                   },

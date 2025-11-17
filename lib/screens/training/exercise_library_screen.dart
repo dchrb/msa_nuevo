@@ -14,6 +14,8 @@ class ExerciseLibraryScreen extends StatefulWidget {
 
 class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
   String _searchQuery = '';
+  String _selectedDifficulty = 'Todos';
+  final List<String> _difficultyLevels = ['Todos', 'Principiante', 'Intermedio', 'Avanzado'];
 
   void _navigateToDetail(Exercise exercise) {
     Navigator.push(
@@ -92,6 +94,19 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
     }
   }
 
+    Color _getDifficultyColor(String? difficulty) {
+    switch (difficulty) {
+      case 'Principiante':
+        return Colors.green.shade600;
+      case 'Intermedio':
+        return Colors.orange.shade600;
+      case 'Avanzado':
+        return Colors.red.shade600;
+      default:
+        return Colors.grey.shade600;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -99,7 +114,7 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: TextField(
             onChanged: (value) {
               setState(() {
@@ -113,6 +128,24 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
             ),
           ),
         ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Wrap(
+            spacing: 8.0,
+            runSpacing: 4.0,
+            children: _difficultyLevels.map((level) {
+              return ChoiceChip(
+                label: Text(level),
+                selected: _selectedDifficulty == level,
+                onSelected: (selected) {
+                  setState(() {
+                    _selectedDifficulty = level;
+                  });
+                },
+              );
+            }).toList(),
+          ),
+        ),
         Expanded(
           child: Consumer<ExerciseProvider>(
             builder: (context, provider, child) {
@@ -120,12 +153,18 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
                 return const Center(child: Text("No hay ejercicios. ¡Añade uno nuevo!"));
               }
 
-              final filteredExercises = provider.exercises.where((exercise) {
+              final searchedExercises = provider.exercises.where((exercise) {
                 final query = _searchQuery.toLowerCase();
                 return exercise.name.toLowerCase().contains(query) ||
-                    exercise.muscleGroup.toLowerCase().contains(query) ||
-                    exercise.equipment.toLowerCase().contains(query);
+                    (exercise.muscleGroup?.toLowerCase() ?? '').contains(query) ||
+                    (exercise.equipment?.toLowerCase() ?? '').contains(query);
               }).toList();
+
+              final filteredExercises = _selectedDifficulty == 'Todos'
+                ? searchedExercises
+                : searchedExercises.where((exercise) {
+                    return exercise.difficulty == _selectedDifficulty;
+                  }).toList();
 
               if (filteredExercises.isEmpty) {
                 return const Center(child: Text('No se encontraron ejercicios.'));
@@ -133,10 +172,11 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
 
               final groupedExercises = <String, List<Exercise>>{};
               for (final exercise in filteredExercises) {
-                if (groupedExercises.containsKey(exercise.muscleGroup)) {
-                  groupedExercises[exercise.muscleGroup]!.add(exercise);
+                final muscleGroup = exercise.muscleGroup ?? 'Otros';
+                if (groupedExercises.containsKey(muscleGroup)) {
+                  groupedExercises[muscleGroup]!.add(exercise);
                 } else {
-                  groupedExercises[exercise.muscleGroup] = [exercise];
+                  groupedExercises[muscleGroup] = [exercise];
                 }
               }
 
@@ -168,6 +208,7 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
                       ),
                       children: exercisesInGroup.map((exercise) {
                         return ListTile(
+                          isThreeLine: true,
                           leading: exercise.imageUrl != null && exercise.imageUrl!.isNotEmpty
                               ? ClipRRect(
                                   borderRadius: BorderRadius.circular(8.0),
@@ -182,7 +223,21 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
                                 )
                               : const Icon(Icons.image, size: 30),
                           title: Text(exercise.name, style: theme.textTheme.titleMedium),
-                          subtitle: Text(exercise.equipment, style: theme.textTheme.bodyMedium),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(exercise.equipment ?? 'N/A', style: theme.textTheme.bodyMedium),
+                              const SizedBox(height: 4),
+                              Chip(
+                                label: Text(exercise.difficulty ?? 'N/A'),
+                                backgroundColor: _getDifficultyColor(exercise.difficulty),
+                                labelStyle: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                                visualDensity: VisualDensity.compact,
+                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              )
+                            ],
+                          ),
                           onTap: () => _navigateToDetail(exercise),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,

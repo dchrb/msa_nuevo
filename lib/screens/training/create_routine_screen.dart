@@ -79,7 +79,7 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
                     children: [
                       ListTile(
                         title: Text(exercise.name),
-                        subtitle: Text(exercise.muscleGroup),
+                        subtitle: Text(exercise.muscleGroup ?? 'Sin grupo muscular'),
                         trailing: Checkbox(
                           value: isSelected,
                           onChanged: (bool? value) {

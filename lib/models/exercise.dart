@@ -11,30 +11,57 @@ class Exercise extends HiveObject {
   @HiveField(1)
   final String name;
   @HiveField(2)
-  final String description;
+  final String? description;
   @HiveField(3)
-  final String type;
+  final String? type;
   @HiveField(4)
-  final String muscleGroup;
+  final String? muscleGroup;
   @HiveField(5)
-  final String equipment;
+  final String? equipment;
   @HiveField(6)
-  final String measurement; // 'reps' or 'time'
+  final String? measurement; // 'reps' or 'time'
   @HiveField(7)
   final String? imageUrl;
   @HiveField(8)
   final String? videoUrl;
 
+  @HiveField(9)
+  final String? difficulty; // Principiante, Intermedio, Avanzado
+
+  // Recommendations
+  @HiveField(10)
+  final String? beginnerSets;
+  @HiveField(11)
+  final String? beginnerReps;
+
+  @HiveField(12)
+  final String? intermediateSets;
+  @HiveField(13)
+  final String? intermediateReps;
+
+  @HiveField(14)
+  final String? advancedSets;
+  @HiveField(15)
+  final String? advancedReps;
+
+
   Exercise({
     required this.id,
     required this.name,
-    required this.description,
-    required this.type,
-    required this.muscleGroup,
-    required this.equipment,
-    required this.measurement,
+    this.description,
+    this.type,
+    this.muscleGroup,
+    this.equipment,
+    this.measurement,
     this.imageUrl,
     this.videoUrl,
+    this.difficulty,
+    this.beginnerSets,
+    this.beginnerReps,
+    this.intermediateSets,
+    this.intermediateReps,
+    this.advancedSets,
+    this.advancedReps,
   });
 
   factory Exercise.fromJson(Map<String, dynamic> json) => _$ExerciseFromJson(json);

@@ -41,12 +41,15 @@ class ExerciseDetailScreen extends StatelessWidget {
             const SizedBox(height: 8),
 
             Text(
-              exercise.description,
+              exercise.description ?? 'No hay descripción disponible.',
               style: theme.textTheme.bodyLarge,
             ),
             const SizedBox(height: 24),
 
             _buildInfoCard(theme),
+            const SizedBox(height: 24),
+
+            _buildRecommendationsCard(theme),
           ],
         ),
       ),
@@ -61,16 +64,58 @@ class ExerciseDetailScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildInfoRow(theme, Icons.fitness_center, 'Grupo Muscular', exercise.muscleGroup),
+            _buildInfoRow(theme, Icons.fitness_center, 'Grupo Muscular', exercise.muscleGroup ?? 'N/A'),
             const Divider(height: 24),
-            _buildInfoRow(theme, Icons.construction, 'Equipamiento', exercise.equipment),
+            _buildInfoRow(theme, Icons.construction, 'Equipamiento', exercise.equipment ?? 'N/A'),
             const Divider(height: 24),
-            _buildInfoRow(theme, Icons.category, 'Tipo', exercise.type),
+            _buildInfoRow(theme, Icons.leaderboard, 'Dificultad', exercise.difficulty ?? 'N/A'),
             const Divider(height: 24),
-             _buildInfoRow(theme, Icons.repeat, 'Medición', exercise.measurement == 'reps' ? 'Repeticiones' : 'Tiempo'),
+             _buildInfoRow(theme, Icons.repeat, 'Medición', (exercise.measurement ?? 'reps') == 'reps' ? 'Repeticiones' : 'Tiempo'),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildRecommendationsCard(ThemeData theme) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Recomendaciones',
+              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            _buildRecommendationRow(theme, 'Principiante', exercise.beginnerSets ?? 'N/A', exercise.beginnerReps ?? 'N/A', exercise.measurement ?? 'reps'),
+            const Divider(height: 16),
+            _buildRecommendationRow(theme, 'Intermedio', exercise.intermediateSets ?? 'N/A', exercise.intermediateReps ?? 'N/A', exercise.measurement ?? 'reps'),
+            const Divider(height: 16),
+            _buildRecommendationRow(theme, 'Avanzado', exercise.advancedSets ?? 'N/A', exercise.advancedReps ?? 'N/A', exercise.measurement ?? 'reps'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecommendationRow(ThemeData theme, String level, String sets, String reps, String measurement) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(level, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            if (sets != 'N/A')
+              Text('Series: $sets', style: theme.textTheme.bodyLarge),
+            Text('${measurement == 'reps' ? 'Reps' : 'Duración'}: $reps', style: theme.textTheme.bodyLarge),
+          ],
+        ),
+      ],
     );
   }
 

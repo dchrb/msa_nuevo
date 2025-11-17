@@ -38,6 +38,13 @@ class ExerciseProvider with ChangeNotifier {
       measurement: exercise.measurement,
       imageUrl: exercise.imageUrl,
       videoUrl: exercise.videoUrl,
+      difficulty: exercise.difficulty,
+      beginnerSets: exercise.beginnerSets,
+      beginnerReps: exercise.beginnerReps,
+      intermediateSets: exercise.intermediateSets,
+      intermediateReps: exercise.intermediateReps,
+      advancedSets: exercise.advancedSets,
+      advancedReps: exercise.advancedReps,
     );
     await _exerciseBox.put(newExercise.id, newExercise);
     _exercises.add(newExercise);

@@ -195,18 +195,10 @@ Future<void> _populateInitialFoodData() async {
 }
 
 Future<void> _populateInitialExerciseData() async {
-  final exerciseBox = Hive.box<Exercise>('exercises');
-  if (exerciseBox.isEmpty) {
-    const uuid = Uuid();
-    var exercise1Id = uuid.v4();
-    await exerciseBox.put(exercise1Id, Exercise(id: exercise1Id, name: 'Press de Banca', description: 'Acuéstese en un banco plano y baje una barra hasta el pecho, luego empújela hacia arriba.', type: 'strength', muscleGroup: 'Pecho', equipment: 'Barra', measurement: 'reps'));
-    var exercise2Id = uuid.v4();
-    await exerciseBox.put(exercise2Id, Exercise(id: exercise2Id, name: 'Sentadillas', description: 'Baje las caderas desde una posición de pie y luego vuelva a levantarse.', type: 'strength', muscleGroup: 'Piernas', equipment: 'Barra', measurement: 'reps'));
-    var exercise3Id = uuid.v4();
-    await exerciseBox.put(exercise3Id, Exercise(id: exercise3Id, name: 'Peso Muerto', description: 'Levante una barra cargada del suelo hasta la altura de las caderas, y luego bájela de nuevo.', type: 'strength', muscleGroup: 'Espalda', equipment: 'Barra', measurement: 'reps'));
-    var exercise4Id = uuid.v4();
-    await exerciseBox.put(exercise4Id, Exercise(id: exercise4Id, name: 'Correr', description: 'Correr a un ritmo constante durante un período de tiempo determinado.', type: 'cardio', muscleGroup: 'Cardio', equipment: 'Ninguno', measurement: 'time'));
-  }
+  // This function is now deprecated.
+  // The ExerciseProvider and ExerciseService handle the initial population
+  // of exercises from the comprehensive list in lib/data/exercise_list.dart.
+  // Leaving this function empty prevents the creation of old, incomplete exercise data.
 }
 
 class MyApp extends StatelessWidget {

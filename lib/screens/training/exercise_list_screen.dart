@@ -1,87 +1,67 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/models/exercise.dart';
-import 'package:myapp/screens/training/add_exercise_screen.dart';
+import 'package:myapp/providers/exercise_provider.dart';
 import 'package:myapp/screens/training/edit_exercise_screen.dart';
-import 'package:myapp/services/exercise_service.dart';
+import 'package:provider/provider.dart';
 
-class ExerciseListScreen extends StatefulWidget {
+class ExerciseListScreen extends StatelessWidget {
   const ExerciseListScreen({super.key});
 
-  @override
-  State<ExerciseListScreen> createState() => _ExerciseListScreenState();
-}
-
-class _ExerciseListScreenState extends State<ExerciseListScreen> {
-  final ExerciseService _exerciseService = ExerciseService();
-  late Future<List<Exercise>> _exercisesFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadExercises();
-  }
-
-  void _loadExercises() {
-    setState(() {
-      _exercisesFuture = _exerciseService.loadExercises();
-    });
-  }
-
-  void _navigateToAddExercise() async {
-    final result = await Navigator.push(
+  void _navigateToAddExercise(BuildContext context) async {
+    final newExercise = await Navigator.push<Exercise>(
       context,
-      MaterialPageRoute(builder: (context) => const AddExerciseScreen()),
+      MaterialPageRoute(builder: (context) => const EditExerciseScreen()),
     );
 
-    if (result == true) {
-      _loadExercises();
+    if (newExercise != null && context.mounted) {
+      Provider.of<ExerciseProvider>(context, listen: false).addExercise(newExercise);
     }
   }
 
-  void _navigateToEditExercise(Exercise exercise) async {
-    final result = await Navigator.push(
+  void _navigateToEditExercise(BuildContext context, Exercise exercise) async {
+    final updatedExercise = await Navigator.push<Exercise>(
       context,
       MaterialPageRoute(
         builder: (context) => EditExerciseScreen(exercise: exercise),
       ),
     );
 
-    if (result != null) {
-      _loadExercises();
+    if (updatedExercise != null && context.mounted) {
+      Provider.of<ExerciseProvider>(context, listen: false).updateExercise(updatedExercise);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FutureBuilder<List<Exercise>>(
-        future: _exercisesFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+      body: Consumer<ExerciseProvider>(
+        builder: (context, exerciseProvider, child) {
+          final exercises = exerciseProvider.exercises;
+          if (exercises.isEmpty) {
             return const Center(child: Text('No has creado ningún ejercicio.'));
           }
-          final exercises = snapshot.data!;
           return ListView.builder(
             itemCount: exercises.length,
             itemBuilder: (context, index) {
               final exercise = exercises[index];
               return ListTile(
                 title: Text(exercise.name),
-                subtitle: Text(exercise.muscleGroup),
-                onTap: () => _navigateToEditExercise(exercise),
+                subtitle: Text(exercise.muscleGroup ?? 'Sin grupo muscular'),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.redAccent),
+                  onPressed: () {
+                    // Opcional: Añadir un diálogo de confirmación aquí
+                    exerciseProvider.deleteExercise(exercise.id);
+                  },
+                ),
+                onTap: () => _navigateToEditExercise(context, exercise),
               );
             },
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _navigateToAddExercise,
+        onPressed: () => _navigateToAddExercise(context),
         tooltip: 'Añadir Ejercicio',
         child: const Icon(Icons.add),
       ),

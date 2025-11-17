@@ -36,7 +36,7 @@ class ExerciseService {
       _exercises = json.map((e) => Exercise.fromJson(e)).toList();
       return _exercises;
     } catch (e) {
-      // Si hay un error, devolvemos la lista de ejercicios por defecto
+      // If there is an error, return the default list of exercises
       _exercises = _getDefaultExercises();
       return _exercises;
     }
@@ -66,98 +66,9 @@ class ExerciseService {
     await _saveExercises();
   }
 
+  // This function is now deprecated. The ExerciseProvider populates data from the main list.
+  // Returning an empty list to satisfy the analyzer and avoid using old data.
   List<Exercise> _getDefaultExercises() {
-    return [
-      Exercise(
-        id: '1',
-        name: 'Press de Banca',
-        muscleGroup: 'Pecho',
-        equipment: 'Barra',
-        description: 'Descripción del ejercicio...',
-        type: 'Fuerza',
-        measurement: 'reps',
-      ),
-      Exercise(
-        id: '2',
-        name: 'Sentadilla',
-        muscleGroup: 'Piernas',
-        equipment: 'Barra',
-        description: 'Descripción del ejercicio...',
-        type: 'Fuerza',
-        measurement: 'reps',
-      ),
-      Exercise(
-        id: '3',
-        name: 'Peso Muerto',
-        muscleGroup: 'Espalda',
-        equipment: 'Barra',
-        description: 'Descripción del ejercicio...',
-        type: 'Fuerza',
-        measurement: 'reps',
-      ),
-      Exercise(
-        id: '4',
-        name: 'Press Militar',
-        muscleGroup: 'Hombros',
-        equipment: 'Barra',
-        description: 'Descripción del ejercicio...',
-        type: 'Fuerza',
-        measurement: 'reps',
-      ),
-      Exercise(
-        id: '5',
-        name: 'Remo con Barra',
-        muscleGroup: 'Espalda',
-        equipment: 'Barra',
-        description: 'Descripción del ejercicio...',
-        type: 'Fuerza',
-        measurement: 'reps',
-      ),
-      Exercise(
-        id: '6',
-        name: 'Curl de Bíceps',
-        muscleGroup: 'Brazos',
-        equipment: 'Mancuernas',
-        description: 'Descripción del ejercicio...',
-        type: 'Fuerza',
-        measurement: 'reps',
-      ),
-      Exercise(
-        id: '7',
-        name: 'Extensiones de Tríceps',
-        muscleGroup: 'Brazos',
-        equipment: 'Mancuernas',
-        description: 'Descripción del ejercicio...',
-        type: 'Fuerza',
-        measurement: 'reps',
-      ),
-      Exercise(
-        id: '8',
-        name: 'Elevaciones Laterales',
-        muscleGroup: 'Hombros',
-        equipment: 'Mancuernas',
-        description: 'Descripción del ejercicio...',
-        type: 'Fuerza',
-        measurement: 'reps',
-      ),
-      Exercise(
-        id: '9',
-        name: 'Zancadas',
-        muscleGroup: 'Piernas',
-        equipment: 'Mancuernas',
-        description: 'Descripción del ejercicio...',
-        type: 'Fuerza',
-        measurement: 'reps',
-      ),
-      Exercise(
-        id: '10',
-        name: 'Plancha',
-        muscleGroup: 'Abdomen',
-        equipment: 'Peso corporal',
-        description: 'Descripción del ejercicio...',
-        type: 'Resistencia',
-        measurement: 'time',
-      ),
-    ];
+    return [];
   }
 }
