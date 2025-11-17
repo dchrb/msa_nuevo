@@ -16,15 +16,14 @@ class ExerciseProvider with ChangeNotifier {
   }
 
   Future<void> _loadExercises() async {
-    // Check for each exercise in the predefined list and add it if it's not already in the box.
+    // This will add each exercise if it's new, or update it if the key already exists.
+    // This ensures the local database is always in sync with the initial list.
     for (final exercise in initialExercises) {
-      if (!_exerciseBox.containsKey(exercise.id)) {
-        await _exerciseBox.put(exercise.id, exercise);
-      }
+      await _exerciseBox.put(exercise.id, exercise);
     }
     
     _exercises = _exerciseBox.values.toList();
-    await _updateExistingExercises(); // Actualizar ejercicios existentes
+    await _updateExistingExercises(); // Update existing exercises with new fields if necessary
     notifyListeners();
   }
 
@@ -73,7 +72,7 @@ class ExerciseProvider with ChangeNotifier {
           beginnerReps: updatedExercise.beginnerReps,
           intermediateSets: updatedExercise.intermediateSets,
           intermediateReps: updatedExercise.intermediateReps,
-          advancedSets: updatedExercise.advancedSets,
+          advancedSets: updatedExercise.advancedReps,
           advancedReps: updatedExercise.advancedReps,
           recommendations: 'Sin recomendaciones específicas.',
         );

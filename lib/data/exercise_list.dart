@@ -102,7 +102,7 @@ List<Exercise> initialExercises = [
     difficulty: 'Intermedio',
     recommendations: 'Acuéstate transversalmente en el banco. Mantén los brazos semi-extendidos y baja la mancuerna por detrás de la cabeza.'
   ),
-    Exercise(
+  Exercise(
     id: 'ex010',
     name: 'Flexiones con Agarre Ancho',
     description: 'Variación de las flexiones que pone un mayor énfasis en los músculos pectorales.',
@@ -181,30 +181,19 @@ List<Exercise> initialExercises = [
     difficulty: 'Principiante',
     recommendations: 'No uses el impulso de la espalda baja. Rema llevando los mangos hacia el abdomen.'
   ),
-  Exercise(
+   Exercise(
     id: 'ex017',
-    name: 'Face Pulls',
-    description: 'Excelente para la salud de los hombros y para trabajar la espalda alta y deltoides posterior.',
+    name: 'Remo en T (T-Bar Row)',
+    description: 'Variación de remo que permite levantar pesado con un agarre neutro o prono.',
     type: 'Fuerza',
-    muscleGroup: 'Hombros',
-    equipment: 'Máquina de poleas con cuerda',
+    muscleGroup: 'Espalda',
+    equipment: 'Máquina de remo en T o barra',
     measurement: 'reps',
-    difficulty: 'Principiante',
-    recommendations: 'Jala la cuerda hacia tu cara, apuntando a separar las manos al final del movimiento. Mantén los codos altos.'
+    difficulty: 'Intermedio',
+    recommendations: 'Mantén la espalda recta. Usa el pecho como soporte si la máquina lo permite.'
   ),
   Exercise(
     id: 'ex018',
-    name: 'Peso Muerto Rumano',
-    description: 'Enfocado en isquiotibiales y glúteos, pero también fortalece la espalda baja.',
-    type: 'Fuerza',
-    muscleGroup: 'Piernas',
-    equipment: 'Barra, Mancuernas',
-    measurement: 'reps',
-    difficulty: 'Intermedio',
-    recommendations: 'Mantén las piernas casi rectas (ligera flexión). Baja el peso deslizando por tus piernas hasta sentir un estiramiento profundo.'
-  ),
-  Exercise(
-    id: 'ex019',
     name: 'Hiperextensiones',
     description: 'Fortalece la zona lumbar, glúteos e isquiotibiales.',
     type: 'Fuerza',
@@ -215,15 +204,26 @@ List<Exercise> initialExercises = [
     recommendations: 'Evita hiperextender la espalda en la parte superior. El movimiento debe ser controlado.'
   ),
   Exercise(
-    id: 'ex020',
-    name: 'Remo en T (T-Bar Row)',
-    description: 'Variación de remo que permite levantar pesado con un agarre neutro.',
+    id: 'ex019',
+    name: 'Good Mornings',
+    description: 'Ejercicio excelente para fortalecer la cadena posterior, especialmente isquiotibiales y espalda baja.',
     type: 'Fuerza',
     muscleGroup: 'Espalda',
-    equipment: 'Máquina de remo en T o barra',
+    equipment: 'Barra',
+    measurement: 'reps',
+    difficulty: 'Avanzado',
+    recommendations: 'Empieza con muy poco peso. Mantén la espalda recta y las rodillas con una ligera flexión.'
+  ),
+  Exercise(
+    id: 'ex020',
+    name: 'Dominadas con Agarre Neutro/Cerrado',
+    description: 'Enfoca más el trabajo en los dorsales y bíceps que el agarre prono.',
+    type: 'Fuerza',
+    muscleGroup: 'Espalda',
+    equipment: 'Barra de dominadas con agarres neutros',
     measurement: 'reps',
     difficulty: 'Intermedio',
-    recommendations: 'Mantén la espalda recta. Usa el pecho como soporte si la máquina lo permite.'
+    recommendations: 'Sube hasta que el pecho toque la barra. Aprieta fuertemente la espalda en la cima.'
   ),
 
   // Piernas (Legs) - 10
@@ -262,14 +262,14 @@ List<Exercise> initialExercises = [
   ),
   Exercise(
     id: 'ex024',
-    name: 'Sentadilla Búlgara',
-    description: 'Variación de zancada con el pie trasero elevado para un mayor enfoque en el glúteo y cuádriceps.',
+    name: 'Peso Muerto Rumano',
+    description: 'Enfocado en isquiotibiales y glúteos, pero también fortalece la espalda baja.',
     type: 'Fuerza',
     muscleGroup: 'Piernas',
-    equipment: 'Mancuernas, banco',
+    equipment: 'Barra, Mancuernas',
     measurement: 'reps',
-    difficulty: 'Avanzado',
-    recommendations: 'Controla el equilibrio. No dejes que la rodilla delantera sobrepase la punta del pie.'
+    difficulty: 'Intermedio',
+    recommendations: 'Mantén las piernas casi rectas (ligera flexión). Baja el peso deslizando por tus piernas hasta sentir un estiramiento profundo.'
   ),
   Exercise(
     id: 'ex025',
@@ -429,14 +429,14 @@ List<Exercise> initialExercises = [
   ),
   Exercise(
     id: 'ex039',
-    name: 'Landmine Press',
-    description: 'Ejercicio unilateral amigable con la articulación del hombro.',
+    name: 'Face Pulls',
+    description: 'Excelente para la salud de los hombros y para trabajar la espalda alta y deltoides posterior.',
     type: 'Fuerza',
     muscleGroup: 'Hombros',
-    equipment: 'Barra, Landmine attachment',
+    equipment: 'Máquina de poleas con cuerda',
     measurement: 'reps',
-    difficulty: 'Intermedio',
-    recommendations: 'Arrodíllate sobre una pierna y presiona la barra hacia arriba y adelante.'
+    difficulty: 'Principiante',
+    recommendations: 'Jala la cuerda hacia tu cara, apuntando a separar las manos al final del movimiento. Mantén los codos altos.'
   ),
   Exercise(
     id: 'ex040',
@@ -495,7 +495,7 @@ List<Exercise> initialExercises = [
     difficulty: 'Intermedio',
     recommendations: 'No extiendas completamente el codo en la parte baja para mantener la tensión.'
   ),
-    Exercise(
+  Exercise(
     id: 'ex045',
     name: 'Curl de Concentración',
     description: 'Ejercicio de aislamiento para el "pico" del bíceps.',
@@ -620,36 +620,36 @@ List<Exercise> initialExercises = [
   ),
   Exercise(
     id: 'ex056',
-    name: 'Correr (Running)',
-    description: 'Ejercicio cardiovascular fundamental para la salud y la quema de calorías.',
-    type: 'Cardio',
-    muscleGroup: 'Cuerpo Completo',
-    equipment: 'Ninguno, cinta de correr',
-    measurement: 'distance',
-    difficulty: 'Todos',
-    recommendations: 'Mantén una buena postura. Aumenta la intensidad o distancia progresivamente.'
+    name: 'Leñador con Polea (Woodchoppers)',
+    description: 'Ejercicio funcional que fortalece los oblicuos y mejora la potencia rotacional.',
+    type: 'Fuerza',
+    muscleGroup: 'Abdomen',
+    equipment: 'Máquina de poleas',
+    measurement: 'reps',
+    difficulty: 'Intermedio',
+    recommendations: 'Realiza un movimiento diagonal, desde arriba hacia abajo, cruzando el cuerpo. Controla el regreso.'
   ),
   Exercise(
     id: 'ex057',
-    name: 'Saltar la Cuerda (Jump Rope)',
-    description: 'Excelente para la coordinación, agilidad y un cardio de alta intensidad.',
-    type: 'Cardio',
-    muscleGroup: 'Cuerpo Completo',
-    equipment: 'Cuerda para saltar',
+    name: 'Plancha Lateral (Side Plank)',
+    description: 'Fortalece los oblicuos y mejora la estabilidad lateral del core.',
+    type: 'Resistencia',
+    muscleGroup: 'Abdomen',
+    equipment: 'Peso corporal',
     measurement: 'time',
-    difficulty: 'Todos',
-    recommendations: 'Mantén los saltos bajos y gira la cuerda con las muñecas, no con los hombros.'
+    difficulty: 'Principiante',
+    recommendations: 'Mantén el cuerpo recto y la cadera elevada. No dejes que se caiga.'
   ),
   Exercise(
     id: 'ex058',
-    name: 'Burpees',
-    description: 'Ejercicio de cuerpo completo de alta intensidad que combina flexión, sentadilla y salto.',
-    type: 'Cardio',
-    muscleGroup: 'Cuerpo Completo',
+    name: 'Bicho Muerto (Dead Bug)',
+    description: 'Excelente para la estabilización del core y la coordinación sin forzar la espalda baja.',
+    type: 'Fuerza',
+    muscleGroup: 'Abdomen',
     equipment: 'Peso corporal',
     measurement: 'reps',
-    difficulty: 'Intermedio',
-    recommendations: 'Mantén un ritmo constante y el core activado.'
+    difficulty: 'Principiante',
+    recommendations: 'Mantén la espalda baja pegada al suelo. Mueve brazo y pierna opuestos de forma lenta y controlada.'
   ),
   Exercise(
     id: 'ex059',
@@ -664,13 +664,13 @@ List<Exercise> initialExercises = [
   ),
   Exercise(
     id: 'ex060',
-    name: 'Bicicleta Estática',
-    description: 'Cardio de bajo impacto ideal para calentamientos, enfriamientos o sesiones largas.',
-    type: 'Cardio',
-    muscleGroup: 'Piernas',
-    equipment: 'Bicicleta estática',
-    measurement: 'time',
-    difficulty: 'Todos',
-    recommendations: 'Ajusta la resistencia según tu nivel. Mantén una cadencia constante.'
+    name: 'Dragon Flag',
+    description: 'Ejercicio de abdomen de nivel experto popularizado por Bruce Lee.',
+    type: 'Fuerza',
+    muscleGroup: 'Abdomen',
+    equipment: 'Banco plano',
+    measurement: 'reps',
+    difficulty: 'Experto',
+    recommendations: 'Sujétate fuertemente al banco. Baja el cuerpo lo más recto posible de forma muy lenta y controlada.'
   )
 ];

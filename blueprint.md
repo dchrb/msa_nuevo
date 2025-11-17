@@ -1,20 +1,8 @@
 # Blueprint de la Aplicación de Fitness
 
-## Plan de Cambios Actuales: Coherencia en el Registro de Peso
+## Plan de Cambios Actuales
 
-**Objetivo:** Eliminar la inconsistencia en el registro de peso entre la planificación de una rutina y la ejecución de un entrenamiento. El peso objetivo definido en la rutina se usará como valor predeterminado durante el entrenamiento.
-
-**Pasos Planificados:**
-
-1.  **Actualizar el Modelo `RoutineExercise`:**
-    *   Añadir un campo `weight` de tipo `double` para almacenar el peso objetivo para cada ejercicio dentro de una rutina.
-
-2.  **Modificar la UI de Creación/Edición de Rutinas:**
-    *   En el diálogo donde se definen las series, repeticiones y descanso, añadir un campo de texto para que el usuario pueda introducir el peso objetivo.
-
-3.  **Pre-rellenar el Peso en la Pantalla de Entrenamiento:**
-    *   Modificar el diálogo de registro de series (`_showLogSetDialog` en `workout_screen.dart`) para que el campo de peso se inicialice con el valor guardado en la rutina.
-    *   El usuario podrá mantener ese peso o modificarlo si levanta una cantidad diferente.
+**Objetivo:** A la espera de nuevas instrucciones.
 
 ---
 
@@ -25,8 +13,9 @@ Esta es una aplicación de fitness desarrollada en Flutter, diseñada para ayuda
 ## Características Implementadas
 
 - **Gestión de Ejercicios:**
-  - Biblioteca de ejercicios con búsqueda y filtrado.
-  - Creación, edición y eliminación de ejercicios.
+  - Biblioteca con 60 ejercicios iniciales, organizados en 6 grupos musculares.
+  - Búsqueda y filtrado de ejercicios.
+  - Creación, edición y eliminación de ejercicios personalizados.
 - **Gestión de Rutinas:**
   - Creación y edición de rutinas personalizadas.
 - **Seguimiento de Entrenamientos:**
@@ -35,6 +24,7 @@ Esta es una aplicación de fitness desarrollada en Flutter, diseñada para ayuda
 
 ## Plan de Cambios Anteriores
 
+- **Ampliación y Corrección de la Base de Datos de Ejercicios:** Se reorganizó y limpió la lista inicial de ejercicios para asegurar la correcta categorización por grupo muscular. Se añadieron 6 nuevos ejercicios para completar las categorías de "Espalda" y "Abdomen", resultando en una base de datos de 60 ejercicios.
 - **Funcionalidades Avanzadas para el Historial:** Se implementó el borrado de sesiones con gesto de deslizar, la opción de "Deshacer" y el filtrado por fecha.
 - **Mejora Visual del Historial:** Se rediseñó la pantalla del historial con tarjetas de resumen y un estado vacío mejorado.
 - **Corrección de UI en Biblioteca:** Se solucionó un error de botones flotantes duplicados y se mejoró la coherencia de la interfaz.
