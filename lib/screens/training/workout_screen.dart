@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:myapp/models/exercise.dart';
 import 'package:myapp/models/routine.dart';
 import 'package:myapp/models/routine_exercise.dart';
@@ -63,8 +62,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
         });
       } else {
         _cancelRestTimer();
-        // Notificación con vibración al finalizar
-        Vibrate.feedback(FeedbackType.success);
+        // Aquí estaba la vibración. Ahora solo finaliza.
       }
     });
   }

@@ -35,7 +35,6 @@ import 'package:myapp/screens/welcome_screen.dart';
 import 'package:myapp/services/notification_service.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
-import 'package:url_strategy/url_strategy.dart';
 
 void main() async {
   // Ensure Flutter bindings are initialized
@@ -43,9 +42,6 @@ void main() async {
 
   // Initialize notification service
   await NotificationService().init();
-
-  // Remove the # from the URL
-  setPathUrlStrategy();
 
   await initializeDateFormatting('es', null);
   await Hive.initFlutter();
