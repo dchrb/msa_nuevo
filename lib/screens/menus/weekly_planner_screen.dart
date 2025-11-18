@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -93,6 +94,7 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
                       margin: const EdgeInsets.symmetric(vertical: 8),
                       elevation: isSelected ? 6 : 2,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      clipBehavior: Clip.antiAlias,
                       color: isSelected ? themeProvider.seedColor.withAlpha(26) : null,
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
@@ -128,50 +130,91 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
 
   Widget _buildMealRow(BuildContext context, String meal, IconData icon, DateTime day, MealPlanProvider mealPlan) {
     final mealText = mealPlan.getMealTextForDay(day, meal);
-    final bool isMealPlanned = mealText.isNotEmpty;
+    final isMealPlanned = mealText.isNotEmpty;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: Theme.of(context).colorScheme.primary.withAlpha(204), size: 22),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(meal, style: GoogleFonts.lato(fontSize: 17, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 4),
-                if (isMealPlanned)
+    final mealRowContent = InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EditMealScreen(mealType: meal, date: day),
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(icon, color: Theme.of(context).colorScheme.primary.withAlpha(204), size: 22),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(meal, style: GoogleFonts.lato(fontSize: 17, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 4),
                   Text(
-                    mealText,
-                    style: GoogleFonts.lato(fontSize: 15, color: Colors.grey[700]),
+                    isMealPlanned ? mealText : 'Toca para añadir una comida',
+                    style: GoogleFonts.lato(
+                      fontSize: 15,
+                      color: isMealPlanned ? Colors.grey[700] : Colors.grey[500],
+                      fontStyle: isMealPlanned ? FontStyle.normal : FontStyle.italic,
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                  )
-                else
-                  Text(
-                    'Toca para añadir una comida',
-                    style: GoogleFonts.lato(fontSize: 15, color: Colors.grey[500], fontStyle: FontStyle.italic),
                   ),
-              ],
+                ],
+              ),
             ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.edit_outlined, size: 22, color: Colors.blueGrey),
-            tooltip: 'Editar',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => EditMealScreen(mealType: meal, date: day),
-                ),
-              ).then((_) => setState(() {})); // Rebuild the screen after editing
-            },
-          ),
-        ],
+            const Icon(Icons.edit_outlined, size: 22, color: Colors.blueGrey),
+          ],
+        ),
       ),
     );
+
+    // *** FIX ***
+    // Only wrap with Dismissible if there's a meal to dismiss.
+    if (isMealPlanned) {
+      return Dismissible(
+        key: Key('${day.toIso8601String()}-$meal'),
+        direction: DismissDirection.horizontal,
+        background: Container(
+          color: Colors.redAccent.withOpacity(0.9),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          alignment: Alignment.centerLeft,
+          child: const Icon(Icons.delete_outline, color: Colors.white, size: 30),
+        ),
+        secondaryBackground: Container(
+          color: Colors.redAccent.withOpacity(0.9),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          alignment: Alignment.centerRight,
+          child: const Icon(Icons.delete_outline, color: Colors.white, size: 30),
+        ),
+        onDismissed: (direction) {
+          final originalMealText = mealPlan.getMealTextForDay(day, meal);
+
+          // This triggers the rebuild which removes the Dismissible from the tree
+          mealPlan.updateMealText(day, meal, '');
+
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Menú de "$meal" eliminado.'),
+              action: SnackBarAction(
+                label: 'DESHACER',
+                onPressed: () {
+                  mealPlan.updateMealText(day, meal, originalMealText);
+                },
+              ),
+            ),
+          );
+        },
+        child: mealRowContent,
+      );
+    }
+
+    // If no meal is planned, return the content without the Dismissible wrapper.
+    return mealRowContent;
   }
 }
