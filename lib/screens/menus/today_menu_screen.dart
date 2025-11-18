@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:myapp/providers/meal_plan_provider.dart';
@@ -7,6 +8,21 @@ import 'package:provider/provider.dart';
 class TodayMenuScreen extends StatelessWidget {
   const TodayMenuScreen({super.key});
 
+  IconData _getIconForMealType(String mealType) {
+    switch (mealType.toLowerCase()) {
+      case 'desayuno':
+        return Icons.free_breakfast_outlined;
+      case 'almuerzo':
+        return Icons.lunch_dining_outlined;
+      case 'cena':
+        return Icons.dinner_dining_outlined;
+      case 'snacks':
+        return Icons.fastfood_outlined;
+      default:
+        return Icons.restaurant_menu_outlined;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -14,8 +30,10 @@ class TodayMenuScreen extends StatelessWidget {
 
     return Consumer<MealPlanProvider>(
       builder: (context, mealPlanProvider, child) {
-        final dailyMenu = mealPlanProvider.getPlanForDay(DateTime.now());
-        final activeMealTypes = dailyMenu.keys.where((mealType) => dailyMenu[mealType]!.isNotEmpty).toList();
+        final today = DateTime.now();
+        final dailyMenu = mealPlanProvider.getPlanForDay(today);
+        // Filter to show only meals that have a description
+        final activeMealTypes = dailyMenu.keys.where((mealType) => dailyMenu[mealType]!.description.isNotEmpty).toList();
 
         if (activeMealTypes.isEmpty) {
           return Center(
@@ -24,18 +42,18 @@ class TodayMenuScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.restaurant_menu_outlined, size: 80, color: Colors.grey[400]),
+                  const Icon(Icons.restaurant_menu_outlined, size: 80, color: Colors.grey),
                   const SizedBox(height: 20),
                   Text(
-                    'Aún no has planificado tus comidas de hoy',
+                    'No has planificado comidas para hoy',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.montserrat(fontSize: 22, fontWeight: FontWeight.bold),
+                    style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Usa el planificador semanal para añadir comidas y verlas aquí.',
+                    'Ve al planificador semanal para añadir tus menús.',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.lato(fontSize: 16, color: Colors.grey[600]),
+                    style: theme.textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
                   ),
                 ],
               ),
@@ -44,55 +62,58 @@ class TodayMenuScreen extends StatelessWidget {
         }
 
         return ListView.builder(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
           itemCount: activeMealTypes.length,
           itemBuilder: (context, index) {
             final mealType = activeMealTypes[index];
-            final mealText = dailyMenu[mealType]!;
+            final meal = dailyMenu[mealType]!;
+            final isCompleted = meal.isCompleted;
 
-            return Card(
-              // La apariencia ahora se controla desde el cardTheme en main.dart
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      mealType,
-                      style: GoogleFonts.montserrat(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.primary, // Usar color primario del tema
+            // Define styles based on completion status
+            final textStyle = theme.textTheme.bodyMedium?.copyWith(
+                  decoration: isCompleted ? TextDecoration.lineThrough : TextDecoration.none,
+                  color: isCompleted ? Colors.grey : theme.textTheme.bodyMedium?.color,
+                );
+            final titleStyle = theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  decoration: isCompleted ? TextDecoration.lineThrough : TextDecoration.none,
+                  color: isCompleted ? Colors.grey : theme.textTheme.titleLarge?.color,
+                );
+
+            return AnimatedOpacity(
+              duration: const Duration(milliseconds: 300),
+              opacity: isCompleted ? 0.7 : 1.0,
+              child: Card(
+                margin: const EdgeInsets.symmetric(vertical: 8.0),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.only(left: 16, right: 0, top: 8, bottom: 8),
+                  leading: Icon(
+                    _getIconForMealType(mealType),
+                    color: isCompleted ? Colors.grey : colorScheme.primary,
+                    size: 40,
+                  ),
+                  title: Text(mealType, style: titleStyle),
+                  subtitle: Text(
+                    meal.description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: textStyle,
+                  ),
+                  trailing: Checkbox(
+                    value: isCompleted,
+                    onChanged: (bool? value) {
+                      mealPlanProvider.toggleMealCompletion(today, mealType);
+                    },
+                    activeColor: colorScheme.primary,
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EditMealScreen(mealType: mealType, date: today),
                       ),
-                    ),
-                    const Divider(height: 20, thickness: 1),
-                    Text(
-                      mealText,
-                      // El color del texto se hereda del tema, contrastando con el fondo del Card
-                      style: GoogleFonts.lato(fontSize: 16, height: 1.4),
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton.icon(
-                          // El color del botón también se adapta al tema
-                          icon: const Icon(Icons.edit_outlined, size: 20),
-                          label: const Text('Editar Comida'),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => EditMealScreen(mealType: mealType, date: DateTime.now()),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    )
-                  ],
+                    );
+                  },
                 ),
               ),
             );
