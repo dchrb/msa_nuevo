@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:myapp/providers/meal_plan_provider.dart';
 import 'package:myapp/providers/theme_provider.dart';
 import 'package:myapp/screens/menus/edit_meal_screen.dart';
-import 'package:myapp/screens/menus/meal_details_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -29,7 +28,6 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    final mealPlanProvider = Provider.of<MealPlanProvider>(context);
 
     return Scaffold(
       body: Column(
@@ -79,28 +77,12 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
               _focusedDay = focusedDay;
             },
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: ElevatedButton.icon(
-              icon: const Icon(Icons.repeat),
-              label: const Text('Repetir Semana'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 40), 
-              ),
-              onPressed: () {
-                mealPlanProvider.repeatWeek(_focusedDay);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Plan de la semana copiado a la siguiente.')),
-                );
-              },
-            ),
-          ),
           Expanded(
             child: Consumer<MealPlanProvider>(
               builder: (context, mealPlan, child) {
                 return ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  itemCount: 7, 
+                  itemCount: 7,
                   itemBuilder: (context, index) {
                     final firstDayOfWeek = _focusedDay.subtract(Duration(days: _focusedDay.weekday - 1));
                     final day = firstDayOfWeek.add(Duration(days: index));
@@ -122,7 +104,7 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
                               style: GoogleFonts.lato(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 18,
-                                color: themeProvider.seedColor
+                                color: themeProvider.seedColor,
                               ),
                             ),
                             const Divider(height: 20),
@@ -145,42 +127,39 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
   }
 
   Widget _buildMealRow(BuildContext context, String meal, IconData icon, DateTime day, MealPlanProvider mealPlan) {
-    final foods = mealPlan.getMealsForDay(day, meal);
-    final totalCalories = foods.fold(0.0, (sum, food) => sum + (food.calories ?? 0));
-    final bool isMealPlanned = foods.isNotEmpty;
+    final mealText = mealPlan.getMealTextForDay(day, meal);
+    final bool isMealPlanned = mealText.isNotEmpty;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: Theme.of(context).colorScheme.primary.withAlpha(204), size: 20),
-          const SizedBox(width: 12),
+          Icon(icon, color: Theme.of(context).colorScheme.primary.withAlpha(204), size: 22),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(meal, style: GoogleFonts.lato(fontSize: 16, fontWeight: FontWeight.w600)),
+                Text(meal, style: GoogleFonts.lato(fontSize: 17, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 4),
                 if (isMealPlanned)
-                  Text('${totalCalories.toStringAsFixed(0)} kcal', style: GoogleFonts.lato(fontSize: 14, color: Colors.grey[600]))
+                  Text(
+                    mealText,
+                    style: GoogleFonts.lato(fontSize: 15, color: Colors.grey[700]),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  )
                 else
-                   Text('No planificado', style: GoogleFonts.lato(fontSize: 14, color: Colors.grey[500], fontStyle: FontStyle.italic)),
+                  Text(
+                    'Toca para añadir una comida',
+                    style: GoogleFonts.lato(fontSize: 15, color: Colors.grey[500], fontStyle: FontStyle.italic),
+                  ),
               ],
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.visibility_outlined, size: 20),
-            tooltip: 'Ver',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => MealDetailScreen(mealType: meal, date: day),
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.edit_outlined, size: 20),
+            icon: const Icon(Icons.edit_outlined, size: 22, color: Colors.blueGrey),
             tooltip: 'Editar',
             onPressed: () {
               Navigator.push(
@@ -188,7 +167,7 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
                 MaterialPageRoute(
                   builder: (context) => EditMealScreen(mealType: meal, date: day),
                 ),
-              );
+              ).then((_) => setState(() {})); // Rebuild the screen after editing
             },
           ),
         ],
