@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:myapp/providers/meal_plan_provider.dart';
-import 'package:myapp/providers/theme_provider.dart';
 import 'package:myapp/screens/menus/edit_meal_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -10,7 +9,8 @@ class TodayMenuScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Consumer<MealPlanProvider>(
       builder: (context, mealPlanProvider, child) {
@@ -51,9 +51,7 @@ class TodayMenuScreen extends StatelessWidget {
             final mealText = dailyMenu[mealType]!;
 
             return Card(
-              elevation: 4,
-              margin: const EdgeInsets.only(bottom: 16.0),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              // La apariencia ahora se controla desde el cardTheme en main.dart
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -64,13 +62,14 @@ class TodayMenuScreen extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: themeProvider.seedColor,
+                        color: colorScheme.primary, // Usar color primario del tema
                       ),
                     ),
                     const Divider(height: 20, thickness: 1),
                     Text(
                       mealText,
-                      style: GoogleFonts.lato(fontSize: 16, color: Colors.black87, height: 1.4),
+                      // El color del texto se hereda del tema, contrastando con el fondo del Card
+                      style: GoogleFonts.lato(fontSize: 16, height: 1.4),
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -79,6 +78,7 @@ class TodayMenuScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         TextButton.icon(
+                          // El color del botón también se adapta al tema
                           icon: const Icon(Icons.edit_outlined, size: 20),
                           label: const Text('Editar Comida'),
                           onPressed: () {

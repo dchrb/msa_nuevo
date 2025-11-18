@@ -281,7 +281,7 @@ class MyApp extends StatelessWidget {
                 lightAppBarTextColor.withAlpha((255 * 0.7).round()),
             indicatorColor: lightAppBarTextColor,
           ),
-           elevatedButtonTheme: ElevatedButtonThemeData(
+          elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
               backgroundColor: lightColorScheme.primary,
               foregroundColor: lightColorScheme.onPrimary,
@@ -290,6 +290,11 @@ class MyApp extends StatelessWidget {
               ),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
+          ),
+          cardTheme: CardThemeData(
+            color: lightColorScheme.surfaceContainerHighest,
+            elevation: 4,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           ),
         );
 
@@ -318,7 +323,7 @@ class MyApp extends StatelessWidget {
                 darkAppBarTextColor.withAlpha((255 * 0.7).round()),
             indicatorColor: darkAppBarTextColor,
           ),
-           elevatedButtonTheme: ElevatedButtonThemeData(
+          elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
               backgroundColor: darkColorScheme.primary,
               foregroundColor: darkColorScheme.onPrimary,
@@ -327,6 +332,11 @@ class MyApp extends StatelessWidget {
               ),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
+          ),
+          cardTheme: CardThemeData(
+            color: darkColorScheme.surfaceContainerHighest,
+            elevation: 4,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           ),
         );
 

@@ -153,6 +153,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
         itemCount: _foods.length,
         itemBuilder: (context, index) {
           final food = _foods[index];
+          // Los colores ahora son manejados por el tema global para consistencia.
           return ListTile(
             title: Text(food.name),
             subtitle: Text('${food.calories} kcal'),
