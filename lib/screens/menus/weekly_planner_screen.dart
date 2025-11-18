@@ -173,20 +173,18 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
       ),
     );
 
-    // *** FIX ***
-    // Only wrap with Dismissible if there's a meal to dismiss.
     if (isMealPlanned) {
       return Dismissible(
         key: Key('${day.toIso8601String()}-$meal'),
         direction: DismissDirection.horizontal,
         background: Container(
-          color: Colors.redAccent.withOpacity(0.9),
+          color: Colors.redAccent.withAlpha(230),
           padding: const EdgeInsets.symmetric(horizontal: 24),
           alignment: Alignment.centerLeft,
           child: const Icon(Icons.delete_outline, color: Colors.white, size: 30),
         ),
         secondaryBackground: Container(
-          color: Colors.redAccent.withOpacity(0.9),
+          color: Colors.redAccent.withAlpha(230),
           padding: const EdgeInsets.symmetric(horizontal: 24),
           alignment: Alignment.centerRight,
           child: const Icon(Icons.delete_outline, color: Colors.white, size: 30),
@@ -194,7 +192,6 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
         onDismissed: (direction) {
           final originalMealText = mealPlan.getMealTextForDay(day, meal);
 
-          // This triggers the rebuild which removes the Dismissible from the tree
           mealPlan.updateMealText(day, meal, '');
 
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -214,7 +211,6 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
       );
     }
 
-    // If no meal is planned, return the content without the Dismissible wrapper.
     return mealRowContent;
   }
 }

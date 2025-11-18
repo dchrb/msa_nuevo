@@ -28,6 +28,7 @@ import 'package:myapp/providers/meal_plan_provider.dart';
 import 'package:myapp/providers/routine_provider.dart';
 import 'package:myapp/providers/theme_provider.dart';
 import 'package:myapp/providers/user_provider.dart';
+import 'package:myapp/providers/water_intake_provider.dart';
 import 'package:myapp/providers/workout_history_provider.dart';
 import 'package:myapp/screens/main_screen.dart';
 import 'package:myapp/screens/profile_screen.dart';
@@ -75,6 +76,7 @@ void main() async {
         ChangeNotifierProvider(create: (context) => RoutineProvider()),
         ChangeNotifierProvider(create: (context) => ExerciseProvider()),
         ChangeNotifierProvider(create: (context) => WorkoutHistoryProvider()),
+        ChangeNotifierProvider(create: (context) => WaterIntakeProvider()),
       ],
       child: MyApp(initialRoute: initialRoute),
     ),

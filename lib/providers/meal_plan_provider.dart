@@ -65,7 +65,7 @@ class MealPlanProvider with ChangeNotifier {
     final meal = _weeklyPlan[weekday]?[mealType];
     if (meal != null) {
       meal.isCompleted = !meal.isCompleted;
-      developer.log('Toggled ${mealType} for day $weekday to ${meal.isCompleted}', name: 'MealPlanProvider');
+      developer.log('Toggled $mealType for day $weekday to ${meal.isCompleted}', name: 'MealPlanProvider');
       notifyListeners();
     }
   }

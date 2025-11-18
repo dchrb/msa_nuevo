@@ -1,6 +1,5 @@
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:myapp/providers/meal_plan_provider.dart';
 import 'package:myapp/screens/menus/edit_meal_screen.dart';
 import 'package:provider/provider.dart';
