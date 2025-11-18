@@ -1,5 +1,5 @@
+
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:myapp/providers/meal_plan_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -19,10 +19,22 @@ class _EditMealScreenState extends State<EditMealScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize the controller with the text from the provider
     final provider = Provider.of<MealPlanProvider>(context, listen: false);
     final mealText = provider.getMealTextForDay(widget.date, widget.mealType);
     _textController = TextEditingController(text: mealText);
+  }
+
+  void _saveMeal() {
+    if (!mounted) return;
+    Provider.of<MealPlanProvider>(context, listen: false).updateMealText(
+      widget.date,
+      widget.mealType,
+      _textController.text,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('¡Menú guardado!')),
+    );
+    Navigator.of(context).pop();
   }
 
   @override
@@ -33,63 +45,57 @@ class _EditMealScreenState extends State<EditMealScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Editar ${widget.mealType}', style: GoogleFonts.lato()),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.save, color: Colors.white),
-            tooltip: 'Guardar Cambios',
-            onPressed: () {
-              // Save the updated text to the provider
-              Provider.of<MealPlanProvider>(context, listen: false).updateMealText(
-                widget.date,
-                widget.mealType,
-                _textController.text,
-              );
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('¡Comida guardada!')),
-              );
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Colors.white,
+        title: Text('Planificar ${widget.mealType}'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              '¿Qué comiste?',
-              style: GoogleFonts.montserrat(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Escribe aquí los alimentos que quieres registrar para el ${widget.mealType.toLowerCase()}. Puedes separar los alimentos con comas.',
-              style: GoogleFonts.lato(fontSize: 16, color: Colors.grey[700]),
-            ),
-            const SizedBox(height: 24),
-            Expanded(
-              child: TextFormField(
-                controller: _textController,
-                maxLines: null, // Allows for multiline input
-                expands: true, // Expands to fill available space
-                textAlignVertical: TextAlignVertical.top,
-                decoration: InputDecoration(
-                  hintText: 'Ej: Arroz, ensalada, carne guisada y agua...',
-                  border: const OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(12.0)),
-                  ),
-                  filled: true,
-                  fillColor: Colors.grey[100],
-                ),
-                style: GoogleFonts.lato(fontSize: 16),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Detalles del Menú',
+                style: textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
-            ),
-          ],
+              const SizedBox(height: 12),
+              Text(
+                'Planifica aquí los alimentos para el ${widget.mealType.toLowerCase()}.',
+                style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurfaceVariant),
+              ),
+              const SizedBox(height: 24),
+              TextFormField(
+                controller: _textController,
+                autofocus: true,
+                maxLines: 8,
+                style: textTheme.bodyLarge,
+                decoration: InputDecoration(
+                  labelText: 'Describe el menú',
+                  hintText: 'Ej: Pechuga de pollo a la plancha, arroz integral y brócoli al vapor.',
+                  prefixIcon: const Icon(Icons.edit_note_outlined),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  alignLabelWithHint: true,
+                ),
+              ),
+              const SizedBox(height: 30),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.save_alt_outlined),
+                label: const Text('Guardar Menú'),
+                onPressed: _saveMeal,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  textStyle: textTheme.titleMedium,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
