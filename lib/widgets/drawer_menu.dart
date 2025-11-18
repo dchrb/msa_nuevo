@@ -33,6 +33,18 @@ class DrawerMenu extends StatelessWidget {
 
     final headerTextColor = textColorForBackground(themeProvider.seedColor);
 
+    // Helper to build list tiles and navigate to the unified LogsScreen
+    Widget buildLogListTile(BuildContext context, {required IconData icon, required Color iconColor, required String title, required int tabIndex}) {
+      return ListTile(
+        leading: Icon(icon, color: iconColor),
+        title: Text(title, style: GoogleFonts.lato()),
+        onTap: () {
+          Navigator.pop(context);
+          Navigator.push(context, MaterialPageRoute(builder: (context) => LogsScreen(initialTabIndex: tabIndex)));
+        },
+      );
+    }
+    
     Widget buildListTile(BuildContext context, {required IconData icon, required Color iconColor, required String title, required Widget destination}) {
       return ListTile(
         leading: Icon(icon, color: iconColor),
@@ -104,9 +116,9 @@ class DrawerMenu extends StatelessWidget {
           ),
           const Divider(),
           _buildExpansionTile(context, title: 'Registro', icon: Icons.edit, iconColor: Colors.deepPurple, children: [
-            buildListTile(context, icon: Icons.water_drop, iconColor: Colors.blue, title: 'Ingesta de Agua', destination: const LogsScreen(initialTabIndex: 0)),
-            buildListTile(context, icon: Icons.fastfood, iconColor: Colors.yellow[700]!, title: 'Comidas', destination: const LogsScreen(initialTabIndex: 1)),
-            buildListTile(context, icon: Icons.straighten, iconColor: Colors.teal, title: 'Medidas', destination: const LogsScreen(initialTabIndex: 2)),
+            buildLogListTile(context, icon: Icons.water_drop, iconColor: Colors.blue, title: 'Ingesta de Agua', tabIndex: 0),
+            buildLogListTile(context, icon: Icons.fastfood, iconColor: Colors.yellow[700]!, title: 'Comidas', tabIndex: 1),
+            buildLogListTile(context, icon: Icons.straighten, iconColor: Colors.teal, title: 'Medidas', tabIndex: 2),
           ]),
           _buildExpansionTile(context, title: 'Mis Recetas', icon: Icons.menu_book, iconColor: Colors.brown[600]!, children: [
             buildListTile(context, icon: Icons.receipt_long, iconColor: Colors.orange[800]!, title: 'Buscar Recetas', destination: const RecipesScreen(initialTabIndex: 0)),
@@ -131,7 +143,7 @@ class DrawerMenu extends StatelessWidget {
           ]),
           const Divider(),
           ListTile(
-            leading: Icon(Icons.info_outline, color: Colors.blueGrey[500]!),
+            leading: Icon(Icons.info_outline, color: Colors.blueGrey[500]! ),
             title: Text('Acerca de', style: GoogleFonts.lato()),
             onTap: () {
               Navigator.pop(context);

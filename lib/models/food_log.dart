@@ -1,30 +1,42 @@
+
 import 'package:hive/hive.dart';
-import 'package:myapp/models/food.dart';
 
 part 'food_log.g.dart';
 
-@HiveType(typeId: 2)
+@HiveType(typeId: 1)
 class FoodLog extends HiveObject {
   @HiveField(0)
   final String id;
 
   @HiveField(1)
-  final DateTime timestamp;
+  final String foodName;
 
   @HiveField(2)
-  final String mealType;
+  final double calories;
 
   @HiveField(3)
-  final Food food;
+  final double protein;
 
   @HiveField(4)
-  final double quantity;
+  final double carbohydrates;
+
+  @HiveField(5)
+  final double fat;
+
+  @HiveField(6)
+  final DateTime date;
+
+  @HiveField(7)
+  final String mealType;
 
   FoodLog({
     required this.id,
-    required this.timestamp,
+    required this.foodName,
+    required this.calories,
+    required this.protein,
+    required this.carbohydrates,
+    required this.fat,
+    required this.date,
     required this.mealType,
-    required this.food,
-    required this.quantity,
   });
 }
