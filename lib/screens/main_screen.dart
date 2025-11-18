@@ -56,8 +56,8 @@ class _MainScreenState extends State<MainScreen>
             ? TabBar(
                 controller: _tabController,
                 tabs: const [
-                  Tab(text: 'Hoy'),
-                  Tab(text: 'Semanal'),
+                  Tab(icon: Icon(Icons.today), text: 'Hoy'),
+                  Tab(icon: Icon(Icons.calendar_month), text: 'Semanal'),
                 ],
               )
             : null,
