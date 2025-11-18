@@ -44,8 +44,8 @@ class _FoodScreenState extends State<FoodScreen> with SingleTickerProviderStateM
         TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(text: 'Hoy'),
-            Tab(text: 'Historial'),
+            Tab(icon: Icon(Icons.today), text: 'Hoy'),
+            Tab(icon: Icon(Icons.history), text: 'Historial'),
           ],
           labelColor: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
           unselectedLabelColor: Colors.grey,
