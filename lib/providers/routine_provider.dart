@@ -35,6 +35,18 @@ class RoutineProvider with ChangeNotifier {
     return routineList;
   }
 
+  Routine? getRoutineForDay(String dayOfWeek) {
+    try {
+      // Find the first routine that matches the day of the week, case-insensitive
+      final routine = routines.firstWhere((r) => r.dayOfWeek?.toLowerCase() == dayOfWeek.toLowerCase());
+      _loadExercisesForRoutine(routine); // Ensure its exercises are loaded
+      return routine;
+    } catch (e) {
+      // firstWhere throws an error if no element is found, so we return null.
+      return null;
+    }
+  }
+
   List<RoutineLog> get routineLogs => _routineLogBox.values.toList();
 
   // ****** Routine Methods ******

@@ -6,6 +6,7 @@ import 'package:myapp/models/food_log.dart';
 import 'package:myapp/models/routine.dart';
 import 'package:myapp/models/water_log.dart';
 import 'package:myapp/models/routine_log.dart';
+import 'package:myapp/providers/routine_provider.dart';
 import 'package:myapp/screens/training/workout_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/providers/user_provider.dart';
@@ -31,22 +32,6 @@ class DashboardScreen extends StatelessWidget {
   String _getMotivationalQuote() {
     final random = Random();
     return motivationalQuotes[random.nextInt(motivationalQuotes.length)];
-  }
-
-  String _getTodayRoutineName() {
-    final dayOfWeek = DateFormat('EEEE', 'es_ES').format(DateTime.now());
-    switch (dayOfWeek.toLowerCase()) {
-      case 'lunes':
-        return 'Cuerpo Completo A';
-      case 'miércoles':
-        return 'Cuerpo Completo B';
-      case 'viernes':
-        return 'Cuerpo Completo A';
-      case 'sábado':
-        return 'Cardio y Core';
-      default:
-        return 'Día de Descanso';
-    }
   }
 
   @override
@@ -111,41 +96,59 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTrainingCard(BuildContext context) {
-    final routineName = _getTodayRoutineName();
-    final isRestDay = routineName == 'Día de Descanso';
+   Widget _buildTrainingCard(BuildContext context) {
+    // 1. Obtener el día de la semana actual en español.
+    final String dayOfWeek = DateFormat('EEEE', 'es_ES').format(DateTime.now());
 
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: isRestDay ? Colors.grey[800] : Theme.of(context).colorScheme.primaryContainer,
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            Text(isRestDay ? '¡A recargar energías!' : 'Tu Reto de Hoy', 
-              style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.bold, color: isRestDay ? Colors.white : Theme.of(context).colorScheme.onPrimaryContainer)),
-            const SizedBox(height: 12),
-            Text(routineName, style: GoogleFonts.lato(fontSize: 24, fontWeight: FontWeight.w600, color: isRestDay ? Colors.white : Theme.of(context).colorScheme.onPrimaryContainer)),
-            if (!isRestDay)
-              Padding(
-                padding: const EdgeInsets.only(top: 20.0),
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.play_arrow_rounded),
-                  label: const Text('Comenzar'),
-                  onPressed: () {
-                     final routineBox = Hive.box<Routine>('routines');
-                     final routines = routineBox.values.where((r) => r.name == routineName);
-                     if (routines.isNotEmpty) {
-                        final routine = routines.first;
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => WorkoutScreen(routine: routine)));
-                     }
-                  },
+    // 2. Usar el Consumer para escuchar cambios en RoutineProvider.
+    return Consumer<RoutineProvider>(
+      builder: (context, routineProvider, child) {
+        // 3. Obtener la rutina del proveedor.
+        final Routine? todayRoutine = routineProvider.getRoutineForDay(dayOfWeek);
+        final bool isRestDay = todayRoutine == null;
+
+        return Card(
+          elevation: 4,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          // 4. Cambiar el color y el contenido según si es día de descanso.
+          color: isRestDay ? Colors.grey[800] : Theme.of(context).colorScheme.primaryContainer,
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              children: [
+                Text(
+                  isRestDay ? '¡A recargar energías!' : 'Tu Reto de Hoy',
+                  style: GoogleFonts.montserrat(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: isRestDay ? Colors.white : Theme.of(context).colorScheme.onPrimaryContainer),
                 ),
-              ),
-          ],
-        ),
-      ),
+                const SizedBox(height: 12),
+                Text(
+                  isRestDay ? 'Día de Descanso' : todayRoutine.name,
+                  style: GoogleFonts.lato(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600,
+                      color: isRestDay ? Colors.white : Theme.of(context).colorScheme.onPrimaryContainer),
+                ),
+                // 5. Mostrar el botón solo si hay una rutina.
+                if (!isRestDay)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20.0),
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.play_arrow_rounded),
+                      label: const Text('Comenzar'),
+                      onPressed: () {
+                        // Navegar a la pantalla de entrenamiento con la rutina obtenida.
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => WorkoutScreen(routine: todayRoutine)));
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
