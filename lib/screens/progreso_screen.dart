@@ -149,24 +149,27 @@ class _ProgresoScreenState extends State<ProgresoScreen> {
 
   Widget _buildDateFilter() {
     final periods = ['Últimos 7 Días', 'Último Mes', 'Último Año'];
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: periods.map((period) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-          child: ChoiceChip(
-            label: Text(period),
-            selected: _selectedPeriod == period,
-            onSelected: (selected) {
-              if (selected) {
-                setState(() {
-                  _selectedPeriod = period;
-                });
-              }
-            },
-          ),
-        );
-      }).toList(),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: periods.map((period) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: ChoiceChip(
+              label: Text(period),
+              selected: _selectedPeriod == period,
+              onSelected: (selected) {
+                if (selected) {
+                  setState(() {
+                    _selectedPeriod = period;
+                  });
+                }
+              },
+            ),
+          );
+        }).toList(),
+      ),
     );
   }
 
