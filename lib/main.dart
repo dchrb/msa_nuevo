@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -53,9 +54,24 @@ void main() async {
   await _populateInitialExerciseData();
 
   final userBox = Hive.box<User>('user_box');
+  
+  // --- Start of my debugging ---
+  developer.log("--- STARTUP DIAGNOSTICS ---", name: 'main.startup');
+  developer.log("Total entries in user_box: ${userBox.values.length}", name: 'main.startup');
+  userBox.values.forEach((user) {
+    developer.log("User found: name=${user.name}, isGuest=${user.isGuest}, key=${user.key}", name: 'main.startup');
+  });
+  // --- End of my debugging ---
+
   final activeUser = userBox.get('activeUser');
   final bool profileExists = userBox.values.any((user) => !user.isGuest);
   final bool activeUserExists = activeUser != null;
+
+  // --- Start of my debugging ---
+  developer.log("Active user check (retrieved from key 'activeUser'): $activeUser", name: 'main.startup');
+  developer.log("activeUserExists flag: $activeUserExists", name: 'main.startup');
+  developer.log("profileExists flag: $profileExists", name: 'main.startup');
+  // --- End of my debugging ---
 
   String initialRoute;
   if (activeUserExists) {
@@ -65,6 +81,11 @@ void main() async {
   } else {
     initialRoute = '/welcome';
   }
+
+  // --- Start of my debugging ---
+  developer.log("Final initialRoute: $initialRoute", name: 'main.startup');
+  developer.log("--- END OF DIAGNOSTICS ---", name: 'main.startup');
+  // --- End of my debugging ---
 
   runApp(
     MultiProvider(
