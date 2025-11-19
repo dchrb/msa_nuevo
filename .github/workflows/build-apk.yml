@@ -24,10 +24,11 @@ jobs:
           distribution: 'temurin'
           java-version: '11'
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: 'stable'
+      - name: Install Flutter SDK (stable)
+        run: |
+          git clone https://github.com/flutter/flutter.git --depth 1 -b stable /home/runner/flutter
+          echo "/home/runner/flutter/bin" >> $GITHUB_PATH
+          /home/runner/flutter/bin/flutter --version
 
       - name: Enable Android licenses (accept)
         run: |
