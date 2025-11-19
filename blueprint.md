@@ -2,17 +2,20 @@
 
 ## Plan de Cambios Actuales
 
-**Objetivo:** Añadir el seguimiento del consumo de agua a la pantalla de progreso para que el usuario pueda ver su evolución semanal.
+**Objetivo:** Mejorar los gráficos de la pantalla de progreso para que ofrezcan una visualización de datos más rica y útil.
 
-**Pasos Realizados:**
-1.  **Análisis de la Pantalla de Progreso (`progreso_screen.dart`):**
-    *   Se ha revisado el código de la pantalla de progreso para entender su estructura actual, identificando las tarjetas de "Progreso de Peso" y "Resumen de Ejercicio Semanal".
-2.  **Examen del Modelo de Datos de Agua (`water_log.dart`):**
-    *   Se ha analizado el modelo `WaterLog` para comprender cómo se almacenan los datos del consumo de agua, confirmando la presencia de los campos `amount` y `timestamp`.
-3.  **Implementación de la Tarjeta de Consumo de Agua:**
-    *   Se ha añadido una nueva tarjeta (`_buildWaterIntakeCard`) a la pantalla de progreso (`progreso_screen.dart`).
-    *   Esta tarjeta muestra un **gráfico de barras** con el consumo de agua de los últimos 7 días.
-    *   Se ha utilizado un `ValueListenableBuilder` para escuchar los cambios en la caja de Hive `water_logs` y actualizar el gráfico en tiempo real.
+**Pasos a Seguir:**
+
+1.  **Mejoras para el Gráfico de Progreso de Peso (Gráfico de Línea):**
+    *   **Indicadores de Máximo y Mínimo:** Resaltar visualmente los puntos de peso más alto y más bajo en el período seleccionado.
+    *   **Línea de Objetivo de Peso:** Dibujar una línea discontinua que represente el peso objetivo del usuario (si está definido).
+    *   **Interactividad:** Mostrar un tooltip con el peso y la fecha exactos al tocar un punto en el gráfico.
+
+2.  **Mejoras para el Gráfico de Consumo de Agua:**
+    *   **Cambio a Gráfico de Línea:** Convertir el gráfico de barras actual a un gráfico de línea para mayor coherencia visual y mejor representación de tendencias.
+    *   **Línea de Objetivo Diario:** Añadir una línea horizontal para la meta de consumo de agua.
+    *   **Indicadores de Objetivo Cumplido:** Cambiar el color de los puntos del gráfico para los días en que se alcanzó la meta.
+    *   **Interactividad:** Habilitar tooltips que muestren la cantidad de agua y la fecha al tocar un punto.
 
 ---
 
@@ -43,6 +46,10 @@ Esta es una aplicación de fitness desarrollada en Flutter, diseñada para ayuda
 
 ## Plan de Cambios Anteriores
 
+- **Mejora pantalla de progreso con filtros y gráficos avanzados:** Se han añadido filtros por rango de fechas, un nuevo gráfico de radar para las medidas corporales y hemos mejorado el gráfico de progreso de peso a un gráfico de línea.
+- **Añadir Seguimiento de Consumo de Agua:**
+    - Se ha añadido una nueva tarjeta (`_buildWaterIntakeCard`) a la pantalla de progreso (`progreso_screen.dart`).
+    - Esta tarjeta muestra un **gráfico de barras** con el consumo de agua de los últimos 7 días.
 - **Implementación Inicial de Rutinas por Defecto:** Se añadió la lógica para crear un conjunto de rutinas de entrenamiento la primera vez que se inicia la aplicación.
 - **Ampliación y Corrección de la Base de Datos de Ejercicios:** Se reorganizó y limpió la lista inicial de ejercicios para asegurar la correcta categorización por grupo muscular. Se añadieron 6 nuevos ejercicios para completar las categorías de "Espalda" y "Abdomen", resultando en una base de datos de 60 ejercicios.
 - **Funcionalidades Avanzadas para el Historial:** Se implementó el borrado de sesiones con gesto de deslizar, la opción de "Deshacer" y el filtrado por fecha.
