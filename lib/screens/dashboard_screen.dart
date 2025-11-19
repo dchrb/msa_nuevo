@@ -210,7 +210,7 @@ class DashboardScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _buildCaloriesRing(context),
-                _buildWaterRing(),
+                _buildWaterRing(context),
                 _buildTrainingRing(),
               ],
             ),
@@ -222,7 +222,7 @@ class DashboardScreen extends StatelessWidget {
 
   Widget _buildCaloriesRing(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final caloricGoal = userProvider.user?.calorieGoal ?? 2000;
+    final caloricGoal = userProvider.user?.calorieGoal ?? 0;
 
     return ValueListenableBuilder(
       valueListenable: Hive.box<FoodLog>('food_logs').listenable(),
@@ -234,7 +234,7 @@ class DashboardScreen extends StatelessWidget {
 
         final dailyLogs = box.values.where((log) => isSameDay(log.date, now));
         final totalCalories = dailyLogs.fold<double>(0, (sum, log) => sum + log.calories);
-        final percent = (totalCalories / caloricGoal).clamp(0.0, 1.0);
+        final percent = caloricGoal > 0 ? (totalCalories / caloricGoal).clamp(0.0, 1.0) : 0.0;
 
         return Column(
           children: [
@@ -248,7 +248,10 @@ class DashboardScreen extends StatelessWidget {
               circularStrokeCap: CircularStrokeCap.round,
             ),
             const SizedBox(height: 8),
-            Text('${totalCalories.toInt()} / ${caloricGoal.toInt()}', style: GoogleFonts.lato(fontWeight: FontWeight.bold)),
+            if (caloricGoal > 0)
+              Text('${totalCalories.toInt()} / ${caloricGoal.toInt()}', style: GoogleFonts.lato(fontWeight: FontWeight.bold)),
+            if (caloricGoal <= 0)
+              Text('Sin meta', style: GoogleFonts.lato(fontWeight: FontWeight.bold, color: Colors.grey)),
             Text('kcal', style: GoogleFonts.lato(color: Colors.grey)),
           ],
         );
@@ -256,7 +259,10 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildWaterRing() {
+  Widget _buildWaterRing(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final waterGoal = userProvider.user?.waterGoal ?? 0;
+
     return ValueListenableBuilder(
       valueListenable: Hive.box<WaterLog>('water_logs').listenable(),
       builder: (context, Box<WaterLog> box, _) {
@@ -267,8 +273,7 @@ class DashboardScreen extends StatelessWidget {
 
         final dailyLogs = box.values.where((log) => isSameDay(log.timestamp, now));
         final totalWater = dailyLogs.fold<double>(0, (sum, log) => sum + log.amount);
-        const waterGoal = 2500; // in ml
-        final percent = (totalWater / waterGoal).clamp(0.0, 1.0);
+        final percent = waterGoal > 0 ? (totalWater / waterGoal).clamp(0.0, 1.0) : 0.0;
 
         return Column(
           children: [
@@ -282,7 +287,10 @@ class DashboardScreen extends StatelessWidget {
               circularStrokeCap: CircularStrokeCap.round,
             ),
             const SizedBox(height: 8),
-            Text('${totalWater.toInt()} / $waterGoal', style: GoogleFonts.lato(fontWeight: FontWeight.bold)),
+            if (waterGoal > 0)
+              Text('${totalWater.toInt()} / $waterGoal', style: GoogleFonts.lato(fontWeight: FontWeight.bold)),
+            if (waterGoal <= 0)
+              Text('Sin meta', style: GoogleFonts.lato(fontWeight: FontWeight.bold, color: Colors.grey)),
             Text('ml', style: GoogleFonts.lato(color: Colors.grey)),
           ],
         );

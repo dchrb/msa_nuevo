@@ -51,6 +51,9 @@ class User extends HiveObject {
   @HiveField(14) // New field for the user's diet plan
   String? dietPlan;
 
+  @HiveField(15)
+  double? waterGoal;
+
   User({
     required this.id,
     required this.name,
@@ -67,6 +70,7 @@ class User extends HiveObject {
     this.fatGoal,
     this.weightGoal,
     this.dietPlan = 'Mantener', // Default to 'Mantener'
+    this.waterGoal,
   });
 
   User copyWith({
@@ -85,6 +89,7 @@ class User extends HiveObject {
     double? fatGoal,
     double? weightGoal,
     String? dietPlan,
+    double? waterGoal,
   }) {
     return User(
       id: id ?? this.id,
@@ -102,6 +107,7 @@ class User extends HiveObject {
       fatGoal: fatGoal ?? this.fatGoal,
       weightGoal: weightGoal ?? this.weightGoal,
       dietPlan: dietPlan ?? this.dietPlan,
+      waterGoal: waterGoal ?? this.waterGoal,
     );
   }
 }
