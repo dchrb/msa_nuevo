@@ -18,10 +18,14 @@ class Routine extends HiveObject {
   @HiveField(3)
   HiveList<RoutineExercise>? exercises;
 
+  @HiveField(4)
+  String? dayOfWeek; // Lunes, Martes, etc.
+
   Routine({
     required this.id,
     required this.name,
     required this.description,
     this.exercises,
+    this.dayOfWeek,
   });
 }

@@ -21,9 +21,12 @@ class _EditRoutineScreenState extends State<EditRoutineScreen> {
   // Local UI state variables
   late String _routineName;
   late String _routineDescription;
+  late String? _dayOfWeek;
   late List<RoutineExercise> _routineExercises;
   Routine? _existingRoutine; // The original routine object for updates
   bool _isCreating = true;
+
+  final List<String> _days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
   @override
   void initState() {
@@ -39,6 +42,7 @@ class _EditRoutineScreenState extends State<EditRoutineScreen> {
       // 2. Populate local state from the existing routine.
       _routineName = _existingRoutine!.name;
       _routineDescription = _existingRoutine!.description;
+      _dayOfWeek = _existingRoutine!.dayOfWeek;
       // 3. Create a mutable copy of the exercises for the UI to manipulate.
       _routineExercises = List<RoutineExercise>.from(_existingRoutine!.exercises ?? []);
     } else {
@@ -46,6 +50,7 @@ class _EditRoutineScreenState extends State<EditRoutineScreen> {
       _isCreating = true;
       _routineName = '';
       _routineDescription = '';
+      _dayOfWeek = null;
       _routineExercises = []; // Start with an empty list.
     }
   }
@@ -61,13 +66,14 @@ class _EditRoutineScreenState extends State<EditRoutineScreen> {
     try {
       if (_isCreating) {
         // 1. Create the routine object first.
-        final newRoutine = await routineProvider.addRoutine(_routineName, _routineDescription);
+        final newRoutine = await routineProvider.addRoutine(_routineName, _routineDescription, _dayOfWeek);
         // 2. Now update the new routine with the list of exercises from UI state.
         await routineProvider.updateRoutine(newRoutine, _routineExercises);
       } else {
         // 1. Update the original routine object with the new name/description.
         _existingRoutine!.name = _routineName;
         _existingRoutine!.description = _routineDescription;
+        _existingRoutine!.dayOfWeek = _dayOfWeek;
         // 2. Pass the original routine and the updated exercise list to the provider.
         await routineProvider.updateRoutine(_existingRoutine!, _routineExercises);
       }
@@ -158,6 +164,26 @@ class _EditRoutineScreenState extends State<EditRoutineScreen> {
                   border: OutlineInputBorder(),
                 ),
                 onSaved: (value) => _routineDescription = value ?? '',
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _dayOfWeek,
+                decoration: const InputDecoration(
+                  labelText: 'Día de la semana (opcional)',
+                  border: OutlineInputBorder(),
+                ),
+                items: _days.map((String day) {
+                  return DropdownMenuItem<String>(
+                    value: day,
+                    child: Text(day),
+                  );
+                }).toList(),
+                onChanged: (newValue) {
+                  setState(() {
+                    _dayOfWeek = newValue;
+                  });
+                },
+                onSaved: (value) => _dayOfWeek = value,
               ),
               const SizedBox(height: 24),
               Text('Ejercicios', style: Theme.of(context).textTheme.titleLarge),

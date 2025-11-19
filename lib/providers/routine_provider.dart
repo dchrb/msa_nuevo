@@ -39,11 +39,12 @@ class RoutineProvider with ChangeNotifier {
 
   // ****** Routine Methods ******
 
-  Future<Routine> addRoutine(String name, String description) async {
+  Future<Routine> addRoutine(String name, String description, String? dayOfWeek) async {
     final routine = Routine(
       id: DateTime.now().toString(), // Using a simpler unique ID
       name: name,
       description: description,
+      dayOfWeek: dayOfWeek,
     );
     await _routineBox.put(routine.id, routine);
     routine.exercises = HiveList(_routineExerciseBox);
