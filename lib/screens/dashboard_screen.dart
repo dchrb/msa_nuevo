@@ -74,7 +74,7 @@ class DashboardScreen extends StatelessWidget {
                     : null,
               ),
               const SizedBox(width: 16),
-              Expanded(
+              Flexible(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -84,7 +84,6 @@ class DashboardScreen extends StatelessWidget {
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).colorScheme.onSurface),
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),

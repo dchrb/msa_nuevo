@@ -36,7 +36,7 @@ class _MainScreenState extends State<MainScreen>
   }
 
   static const List<String> _appBarTitles = <String>[
-    'Salud Activa',
+    'MiSaludActiva',
     'Plan de Comidas',
     'Progreso',
   ];
@@ -51,7 +51,10 @@ class _MainScreenState extends State<MainScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_appBarTitles[_selectedIndex]),
+        title: FittedBox(
+          fit: BoxFit.contain,
+          child: Text(_appBarTitles[_selectedIndex]),
+        ),
         bottom: _selectedIndex == 1
             ? TabBar(
                 controller: _tabController,
