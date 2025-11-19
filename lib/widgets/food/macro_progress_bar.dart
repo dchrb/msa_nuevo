@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 class MacroProgressBar extends StatelessWidget {
@@ -35,7 +34,7 @@ class MacroProgressBar extends StatelessWidget {
         const SizedBox(height: 4),
         LinearProgressIndicator(
           value: progress,
-          backgroundColor: color.withOpacity(0.2),
+          backgroundColor: color.withAlpha((255 * 0.2).round()), // CORREGIDO
           color: color,
           minHeight: 8,
           borderRadius: BorderRadius.circular(4),

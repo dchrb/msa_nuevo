@@ -1,6 +1,5 @@
-
-import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'package:flutter/material.dart';
 import 'package:myapp/widgets/food/macro_progress_bar.dart';
 
 class CalorieSummaryCard extends StatelessWidget {
@@ -50,7 +49,7 @@ class CalorieSummaryCard extends StatelessWidget {
                     painter: CalorieRingPainter(
                       progress: calorieProgress,
                       color: colorScheme.primary,
-                      backgroundColor: colorScheme.primary.withOpacity(0.2),
+                      backgroundColor: colorScheme.primary.withAlpha((255 * 0.2).round()), // CORREGIDO
                     ),
                     child: Center(
                       child: Column(

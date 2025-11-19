@@ -1,10 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:myapp/models/exercise.dart';
+import 'package:myapp/models/exercise_log.dart';
 import 'package:myapp/models/routine.dart';
 import 'package:myapp/models/routine_exercise.dart';
+import 'package:myapp/models/routine_log.dart';
+import 'package:myapp/models/set_log.dart'; // Importación añadida
 import 'package:myapp/models/workout_session.dart';
 import 'package:myapp/providers/exercise_provider.dart';
+import 'package:myapp/providers/routine_provider.dart';
 import 'package:myapp/providers/workout_history_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -20,12 +24,10 @@ class WorkoutScreen extends StatefulWidget {
 class _WorkoutScreenState extends State<WorkoutScreen> {
   late Map<int, List<SetLog?>> _setsData;
   
-  // --- Temporizador State ---
   Timer? _timer;
   int _countdownTime = 0;
   bool _isResting = false;
   int? _restingExerciseIndex;
-  // --------------------------
 
   @override
   void initState() {
@@ -38,16 +40,14 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 
   @override
   void dispose() {
-    // Cancelar el temporizador al salir de la pantalla para evitar errores
     _timer?.cancel();
     super.dispose();
   }
 
-  // --- Lógica del Temporizador ---
   void _startRestTimer(int exerciseIndex, int restTimeInSeconds) {
     if (restTimeInSeconds <= 0) return;
 
-    _cancelRestTimer(); // Cancela cualquier temporizador anterior
+    _cancelRestTimer();
 
     setState(() {
       _countdownTime = restTimeInSeconds;
@@ -62,7 +62,6 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
         });
       } else {
         _cancelRestTimer();
-        // Aquí estaba la vibración. Ahora solo finaliza.
       }
     });
   }
@@ -75,7 +74,6 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       _countdownTime = 0;
     });
   }
-  // --------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -120,7 +118,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             padding: const EdgeInsets.symmetric(vertical: 16.0),
             textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          onPressed: _isResting ? null : _finishWorkout, // Desactivar si se está en descanso
+          onPressed: _isResting ? null : () => _finishWorkout(context: context), // Pasamos el context
         ),
       ),
     );
@@ -156,11 +154,9 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               ),
             const SizedBox(height: 16),
             
-            // --- Widget del Temporizador ---
             if (isCurrentlyResting)
               _buildTimerWidget(routineExercise.restTime!)
             else
-            // ---------------------------
               Wrap(
                 spacing: 12.0,
                 runSpacing: 8.0,
@@ -210,7 +206,6 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     );
   }
 
-  // --- Widget para mostrar el temporizador ---
   Widget _buildTimerWidget(int totalRestTime) {
     final double progress = 1.0 - (_countdownTime / totalRestTime);
     return Column(
@@ -238,7 +233,6 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       ],
     );
   }
-  // ----------------------------------------
 
   void _showLogSetDialog(int exerciseIndex, int setIndex, RoutineExercise routineExercise) {
     final repsController = TextEditingController(text: routineExercise.reps.split('-').first);
@@ -293,12 +287,11 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   }
 
                   setState(() {
-                    _setsData[exerciseIndex]![setIndex] = SetLog(reps: reps, weight: weight);
+                    // CORRECCIÓN: Usamos `weight ?? 0.0` para asegurar que no sea nulo
+                    _setsData[exerciseIndex]![setIndex] = SetLog(reps: reps, weight: weight ?? 0.0);
                   });
                   Navigator.of(ctx).pop();
 
-                  // Iniciar el temporizador después de guardar una serie
-                  // Solo si no es la última serie del ejercicio
                   final bool isLastSet = setIndex == routineExercise.sets - 1;
                   if (!isLastSet && routineExercise.restTime != null && routineExercise.restTime! > 0) {
                     _startRestTimer(exerciseIndex, routineExercise.restTime!);
@@ -332,9 +325,9 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             TextButton(
               child: const Text('Finalizar', style: TextStyle(color: Colors.red)),
               onPressed: () {
-                _timer?.cancel(); // Detener el temporizador si se sale
-                Navigator.of(ctx).pop(); // Cierra el diálogo
-                Navigator.of(context).pop(); // Cierra la pantalla de entrenamiento
+                _timer?.cancel();
+                Navigator.of(ctx).pop();
+                Navigator.of(context).pop();
               },
             ),
           ],
@@ -343,12 +336,14 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     );
   }
 
-  void _finishWorkout({bool confirmed = false}) {
-    _timer?.cancel(); // Detener el temporizador al finalizar
+  Future<void> _finishWorkout({required BuildContext context}) async {
+    _timer?.cancel();
 
     final historyProvider = Provider.of<WorkoutHistoryProvider>(context, listen: false);
+    final routineProvider = Provider.of<RoutineProvider>(context, listen: false);
     final exerciseProvider = Provider.of<ExerciseProvider>(context, listen: false);
-    final List<PerformedExerciseLog> performedExercises = [];
+    final List<PerformedExerciseLog> performedExercisesForHistory = [];
+    final List<ExerciseLog> exerciseLogsForRoutineLog = [];
 
     _setsData.forEach((exerciseIndex, logs) {
       final routineExercise = widget.routine.exercises![exerciseIndex];
@@ -356,37 +351,50 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       final List<SetLog> completedSets = logs.where((log) => log != null).cast<SetLog>().toList();
 
       if (exercise != null && completedSets.isNotEmpty) {
-        performedExercises.add(PerformedExerciseLog(
+        // Para el historial detallado
+        performedExercisesForHistory.add(PerformedExerciseLog(
           exerciseName: exercise.name,
+          sets: completedSets,
+        ));
+        // Para el RoutineLog del dashboard
+        exerciseLogsForRoutineLog.add(ExerciseLog(
+          exercise: exercise,
           sets: completedSets,
         ));
       }
     });
 
-    if (performedExercises.isEmpty) {
+    if (!context.mounted) return;
+
+    if (performedExercisesForHistory.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('No se ha registrado ninguna serie. El entrenamiento no se guardará.')),
       );
-      if (confirmed) Navigator.of(context).pop();
       return;
     }
 
+    // Guardar en el historial detallado
     final newSession = WorkoutSession(
       routineName: widget.routine.name,
       date: DateTime.now(),
-      performedExercises: performedExercises,
+      performedExercises: performedExercisesForHistory,
     );
-
     historyProvider.addWorkoutSession(newSession);
 
+    // Guardar el log para el dashboard
+    final newLog = RoutineLog(
+      routineName: widget.routine.name,
+      date: DateTime.now(),
+      exerciseLogs: exerciseLogsForRoutineLog,
+    );
+    await routineProvider.addRoutineLog(newLog);
+
+    if (!context.mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('¡Entrenamiento guardado en el historial! Buen trabajo.')),
+      const SnackBar(content: Text('¡Entrenamiento guardado! Buen trabajo.')),
     );
     
-    if (confirmed) {
-        Navigator.of(context).pop(); 
-    } else {
-        Navigator.of(context).pop();
-    }
+    Navigator.of(context).pop();
   }
 }

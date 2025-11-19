@@ -183,7 +183,6 @@ class _EditRoutineScreenState extends State<EditRoutineScreen> {
                     _dayOfWeek = newValue;
                   });
                 },
-                onSaved: (value) => _dayOfWeek = value,
               ),
               const SizedBox(height: 24),
               Text('Ejercicios', style: Theme.of(context).textTheme.titleLarge),

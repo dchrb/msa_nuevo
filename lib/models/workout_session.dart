@@ -1,23 +1,6 @@
 // lib/models/workout_session.dart
 import 'package:uuid/uuid.dart';
-
-// Representa los datos registrados para una sola serie de un ejercicio.
-class SetLog {
-  final int reps;
-  final double? weight; // Change: Made weight optional
-
-  SetLog({required this.reps, this.weight}); // Change: Updated constructor
-
-  @override
-  String toString() {
-    // Ayudante para formatear la cadena de salida
-    if (weight != null) {
-        return '$reps reps con $weight kg';
-    } else {
-        return '$reps reps';
-    }
-  }
-}
+import 'package:myapp/models/set_log.dart'; // Importa la clase correcta
 
 // Representa todas las series registradas para un solo ejercicio dentro de una sesión de entrenamiento.
 class PerformedExerciseLog {
