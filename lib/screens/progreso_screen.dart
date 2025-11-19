@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:myapp/models/body_measurement.dart';
+import 'package:myapp/models/routine_log.dart';
 import 'package:myapp/widgets/ui/watermark_image.dart';
 
 class ProgresoScreen extends StatelessWidget {
@@ -28,7 +29,7 @@ class ProgresoScreen extends StatelessWidget {
               children: [
                 _buildWeightProgressCard(),
                 const SizedBox(height: 24),
-                _buildWorkoutSummaryCard(context),
+                _buildWorkoutSummaryCard(),
               ],
             ),
           ),
@@ -115,41 +116,61 @@ class ProgresoScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildWorkoutSummaryCard(BuildContext context) {
-    // Placeholder Data
-    const workoutsThisWeek = 3;
-    const timeSpent = "2h 15m";
+  Widget _buildWorkoutSummaryCard() {
+    String formatDuration(int totalMinutes) {
+      final hours = totalMinutes ~/ 60;
+      final minutes = totalMinutes % 60;
+      return '${hours}h ${minutes}m';
+    }
 
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Resumen de Ejercicio Semanal', style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Column(
-                  children: [
-                    Text('$workoutsThisWeek', style: GoogleFonts.montserrat(fontSize: 28, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
-                    Text('Entrenos esta semana', style: GoogleFonts.lato()),
-                  ],
-                ),
-                Column(
-                  children: [
-                     Text(timeSpent, style: GoogleFonts.montserrat(fontSize: 28, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
-                    Text('Tiempo total', style: GoogleFonts.lato()),
-                  ],
-                ),
-              ],
+    return ValueListenableBuilder(
+        valueListenable: Hive.box<RoutineLog>('routine_logs').listenable(),
+        builder: (context, Box<RoutineLog> box, _) {
+          final now = DateTime.now();
+          final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+          final endOfWeek = startOfWeek.add(const Duration(days: 6));
+
+          final weeklyLogs = box.values.where((log) {
+            final logDate = log.date;
+            return logDate.isAfter(startOfWeek.subtract(const Duration(days: 1))) &&
+                   logDate.isBefore(endOfWeek.add(const Duration(days: 1)));
+          }).toList();
+
+          final workoutsThisWeek = weeklyLogs.length;
+          final totalMinutes = weeklyLogs.fold<int>(0, (sum, log) => sum + (log.duration?.inMinutes ?? 0));
+          final timeSpent = formatDuration(totalMinutes);
+
+          return Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Resumen de Ejercicio Semanal', style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Column(
+                        children: [
+                          Text(workoutsThisWeek.toString(), style: GoogleFonts.montserrat(fontSize: 28, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
+                          Text('Entrenos esta semana', style: GoogleFonts.lato()),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Text(timeSpent, style: GoogleFonts.montserrat(fontSize: 28, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
+                          Text('Tiempo total', style: GoogleFonts.lato()),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
-    );
+          );
+        });
   }
 }

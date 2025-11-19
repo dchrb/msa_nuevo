@@ -2,12 +2,25 @@
 
 ## Plan de Cambios Actuales
 
-**Objetivo:** Implementar un plan de entrenamiento semanal precargado, asignando cada rutina a un día específico de la semana.
+**Objetivo:** Rediseñar la interfaz principal para separar el progreso a largo plazo del resumen diario, conectar la nueva pantalla de progreso con los datos reales del usuario y corregir los errores detectados por el analizador de código.
 
 **Pasos Realizados:**
-1.  **Renombrar y Asignar Rutinas:** Se modificó la lógica de creación de rutinas (`lib/data/default_routines.dart`) para nombrar cada rutina según el día de la semana que le corresponde (ej. "Lunes: Cuerpo Completo A").
-2.  **Plan Semanal Completo:** Se crearon 4 entradas de rutina para cubrir los días de entrenamiento de la semana: Lunes, Miércoles, Viernes y Sábado.
-3.  **Lógica de Actualización:** Se añadió un mecanismo para eliminar las rutinas con el formato de nombre antiguo y reemplazarlas por el nuevo formato basado en días.
+1.  **Creación de la Pantalla de Progreso (`progreso_screen.dart`):**
+    *   Se ha implementado una nueva pantalla para visualizar el progreso a largo plazo.
+    *   Incluye un **gráfico de barras** para la evolución del peso, conectado a la base de datos `body_measurements`.
+    *   Se ha añadido una tarjeta de **Resumen de Ejercicio Semanal**.
+2.  **Conexión del Resumen de Ejercicio con Datos Reales:**
+    *   La tarjeta de resumen ahora se conecta a la base de datos `routine_logs`.
+    *   Muestra dinámicamente el **número de entrenamientos** y el **tiempo total de entrenamiento** de la semana actual.
+3.  **Refactorización del Dashboard (`dashboard_screen.dart`):**
+    *   Se ha eliminado la sección de progreso del dashboard para enfocarlo en el resumen diario.
+4.  **Verificación de la Navegación (`main_screen.dart`):**
+    *   Se ha confirmado que la navegación principal con tres pestañas ("Inicio", "Menús", "Progreso") ya estaba correctamente implementada.
+5.  **Corrección de Errores de Análisis:**
+    *   Se ejecutó `flutter analyze` y se detectaron 3 problemas en `progreso_screen.dart`.
+    *   Se corrigió el uso del campo `duration` en el modelo `RoutineLog` (antes `durationInMinutes`), solucionando el error principal.
+    *   Se ajustó el código para resolver un error de tipo y una advertencia de estilo.
+    *   Se verificó con un segundo análisis que todos los problemas fueron resueltos.
 
 ---
 
@@ -17,6 +30,11 @@ Esta es una aplicación de fitness desarrollada en Flutter, diseñada para ayuda
 
 ## Características Implementadas
 
+- **Seguimiento de Progreso a Largo Plazo:**
+  - Pantalla dedicada para visualizar el progreso de peso y el resumen de actividad semanal.
+  - Gráficos y métricas para una visión clara de la evolución.
+- **Dashboard Diario:**
+  - Vista principal centrada en el progreso del día actual (calorías, agua, entrenamiento).
 - **Plan de Entrenamiento Semanal por Día:**
   - La aplicación incluye un plan de entrenamiento semanal precargado y asignado a días específicos.
   - Las rutinas (`Lunes: Cuerpo Completo A`, `Miércoles: Cuerpo Completo B`, `Viernes: Cuerpo Completo A`, `Sábado: Cardio y Core`) se crean automáticamente.
