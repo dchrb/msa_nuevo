@@ -20,14 +20,14 @@ dependencies:
   hive_flutter: ^1.1.0
   path_provider: ^2.1.5
   uuid: any
-  percent_indicator: any
+  percent_indicator: ^4.2.5
   image_picker: any
   provider: any
   google_fonts: any
   flex_color_picker: any
   flutter_colorpicker: any
   flutter_staggered_animations: any
-  fl_chart: any
+  fl_chart: ^1.1.1
   rive: any
   shared_preferences: any
   url_launcher: any

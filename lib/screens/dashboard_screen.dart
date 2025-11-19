@@ -4,10 +4,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:myapp/models/body_measurement.dart';
 import 'package:myapp/models/food_log.dart';
-import 'package:myapp/widgets/dashboard/circular_progress_card.dart';
+import 'package:myapp/models/water_log.dart';
+import 'package:myapp/models/routine_log.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/providers/user_provider.dart';
 import 'package:myapp/widgets/ui/watermark_image.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:percent_indicator/percent_indicator.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -17,22 +20,23 @@ class DashboardScreen extends StatelessWidget {
     return Stack(
       children: [
         const WatermarkImage(imageName: 'inicio'),
-        ListView(
+        SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
-          children: [
-            _buildWelcomeHeader(context),
-            const SizedBox(height: 24),
-            _buildCaloriesCard(),
-            const SizedBox(height: 24),
-            _buildWeightProgressCard(),
-          ],
+          child: Column(
+            children: [
+              _buildWelcomeHeader(context),
+              const SizedBox(height: 24),
+              _buildDailyProgressRings(),
+              const SizedBox(height: 24),
+              _buildWeightProgressCard(),
+            ],
+          ),
         ),
       ],
     );
   }
 
   Widget _buildWelcomeHeader(BuildContext context) {
-    // Use a Consumer to listen directly to the UserProvider for changes
     return Consumer<UserProvider>(
       builder: (context, userProvider, child) {
         final user = userProvider.user;
@@ -70,7 +74,7 @@ class DashboardScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Toca para crear o editar tu perfil',
+                      'Aquí está tu progreso de hoy',
                       style: GoogleFonts.lato(
                           fontSize: 16,
                           color: Theme.of(context).colorScheme.onPrimaryContainer.withAlpha((255 * 0.8).round())),
@@ -86,30 +90,135 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCaloriesCard() {
+  Widget _buildDailyProgressRings() {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Progreso Diario', style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildCaloriesRing(),
+                _buildWaterRing(),
+                _buildTrainingRing(),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCaloriesRing() {
     return ValueListenableBuilder(
       valueListenable: Hive.box<FoodLog>('food_logs').listenable(),
       builder: (context, Box<FoodLog> box, _) {
         final now = DateTime.now();
-
         bool isSameDay(DateTime d1, DateTime d2) {
           return d1.year == d2.year && d1.month == d2.month && d1.day == d2.day;
         }
 
         final dailyLogs = box.values.where((log) => isSameDay(log.date, now));
-        
-        final totalCalories = dailyLogs.fold<double>(
-            0, (sum, log) => sum + log.calories);
-            
-        // TODO: This should come from user settings
+        final totalCalories = dailyLogs.fold<double>(0, (sum, log) => sum + log.calories);
         const caloricGoal = 2000;
+        final percent = (totalCalories / caloricGoal).clamp(0.0, 1.0);
 
-        return CircularProgressCard(
-          title: 'Calorías Consumidas',
-          progress: totalCalories / caloricGoal,
-          centerText: '${totalCalories.toInt()}kcal',
-          primaryColor: Colors.orange,
-          backgroundColor: Colors.orange.withAlpha((255 * 0.2).round()),
+        return CircularPercentIndicator(
+          radius: 50.0,
+          lineWidth: 10.0,
+          percent: percent,
+          center: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.local_fire_department, color: Colors.orange, size: 30),
+              Text(
+                '${totalCalories.toInt()} kcal',
+                style: GoogleFonts.lato(fontSize: 14, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          progressColor: Colors.orange,
+          backgroundColor: Colors.orange.shade100,
+          circularStrokeCap: CircularStrokeCap.round,
+        );
+      },
+    );
+  }
+
+  Widget _buildWaterRing() {
+    return ValueListenableBuilder(
+      valueListenable: Hive.box<WaterLog>('water_logs').listenable(),
+      builder: (context, Box<WaterLog> box, _) {
+        final now = DateTime.now();
+        bool isSameDay(DateTime d1, DateTime d2) {
+          return d1.year == d2.year && d1.month == d2.month && d1.day == d2.day;
+        }
+
+        final dailyLogs = box.values.where((log) => isSameDay(log.timestamp, now));
+        final totalWater = dailyLogs.fold<double>(0, (sum, log) => sum + log.amount);
+        const waterGoal = 2000; // in ml
+        final percent = (totalWater / waterGoal).clamp(0.0, 1.0);
+
+        return CircularPercentIndicator(
+          radius: 50.0,
+          lineWidth: 10.0,
+          percent: percent,
+          center: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.water_drop, color: Colors.blue, size: 30),
+              Text(
+                '${totalWater.toInt()} ml',
+                style: GoogleFonts.lato(fontSize: 14, fontWeight: FontWeight.bold),
+                 textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          progressColor: Colors.blue,
+          backgroundColor: Colors.blue.shade100,
+          circularStrokeCap: CircularStrokeCap.round,
+        );
+      },
+    );
+  }
+
+  Widget _buildTrainingRing() {
+    return ValueListenableBuilder(
+      valueListenable: Hive.box<RoutineLog>('routine_logs').listenable(),
+      builder: (context, Box<RoutineLog> box, _) {
+        final now = DateTime.now();
+        bool isSameDay(DateTime d1, DateTime d2) {
+          return d1.year == d2.year && d1.month == d2.month && d1.day == d2.day;
+        }
+
+        final trainedToday = box.values.any((log) => isSameDay(log.date, now));
+        final percent = trainedToday ? 1.0 : 0.0;
+
+        return CircularPercentIndicator(
+          radius: 50.0,
+          lineWidth: 10.0,
+          percent: percent,
+          center: Column(
+             mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.fitness_center, color: Colors.green, size: 30),
+               Text(
+                trainedToday ? '¡Hecho!' : 'Pendiente',
+                style: GoogleFonts.lato(fontSize: 14, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          progressColor: Colors.green,
+          backgroundColor: Colors.green.shade100,
+          circularStrokeCap: CircularStrokeCap.round,
         );
       },
     );
@@ -124,62 +233,72 @@ class DashboardScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Progreso de Peso',
-                style: GoogleFonts.montserrat(
-                    fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            ValueListenableBuilder(
-              valueListenable:
-                  Hive.box<BodyMeasurement>('body_measurements').listenable(),
-              builder: (context, Box<BodyMeasurement> box, _) {
-                if (box.values.length < 2) {
-                  return const Text(
-                      'No hay suficientes datos para mostrar el progreso.');
-                }
-                final lastTwo = box.values.toList()
-                  ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
-                final last = lastTwo.last;
-                final secondLast = lastTwo[lastTwo.length - 2];
-                final difference = (last.weight ?? 0) - (secondLast.weight ?? 0);
+            Text('Progreso de Peso (Últimos 7 Días)', style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 150,
+              child: ValueListenableBuilder(
+                valueListenable: Hive.box<BodyMeasurement>('body_measurements').listenable(),
+                builder: (context, Box<BodyMeasurement> box, _) {
+                  if (box.values.length < 2) {
+                    return const Center(child: Text('No hay suficientes datos para mostrar el progreso.'));
+                  }
 
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildWeightStat(context, 'Último', last.weight, 'kg'),
-                    _buildWeightStat(context, 'Cambio', difference, 'kg',
-                        showSign: true),
-                  ],
-                );
-              },
+                  final measurements = box.values.toList()..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+                  final recentMeasurements = measurements.length > 7 ? measurements.sublist(measurements.length - 7) : measurements;
+
+                  return BarChart(
+                    BarChartData(
+                      alignment: BarChartAlignment.spaceAround,
+                      maxY: recentMeasurements.map((m) => m.weight ?? 0).reduce((a, b) => a > b ? a : b) + 5,
+                      minY: recentMeasurements.map((m) => m.weight ?? 0).reduce((a, b) => a < b ? a : b) - 5,
+                      barGroups: recentMeasurements.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final measurement = entry.value;
+                        return BarChartGroupData(
+                          x: index,
+                          barRods: [
+                            BarChartRodData(
+                              toY: measurement.weight ?? 0,
+                              color: Theme.of(context).colorScheme.primary,
+                              width: 15,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ],
+                        );
+                      }).toList(),
+                      titlesData: FlTitlesData(
+                        leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 30,
+                            getTitlesWidget: (value, meta) {
+                              final index = value.toInt();
+                              if (index >= 0 && index < recentMeasurements.length) {
+                                final date = recentMeasurements[index].timestamp;
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
+                                  child: Text('${date.day}/${date.month}', style: const TextStyle(fontSize: 10)),
+                                );
+                              }
+                              return const Text('');
+                            },
+                          ),
+                        ),
+                      ),
+                      gridData: const FlGridData(show: false),
+                      borderData: FlBorderData(show: false),
+                    ),
+                  );
+                },
+              ),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildWeightStat(BuildContext context, String label, double? value, String unit,
-      {bool showSign = false}) {
-    if (value == null) return const SizedBox.shrink();
-    final colorScheme = Theme.of(context).colorScheme;
-
-    final valueString = (showSign && value > 0)
-        ? '+${value.toStringAsFixed(1)}'
-        : value.toStringAsFixed(1);
-    final valueColor = !showSign
-        ? colorScheme.onSurface
-        : (value > 0 ? colorScheme.error : Colors.green);
-
-    return Column(
-      children: [
-        Text(label,
-            style: GoogleFonts.lato(
-                fontSize: 16, color: colorScheme.onSurfaceVariant)),
-        const SizedBox(height: 4),
-        Text('$valueString $unit',
-            style: GoogleFonts.montserrat(
-                fontSize: 20, fontWeight: FontWeight.bold, color: valueColor)),
-      ],
     );
   }
 }
