@@ -2,25 +2,17 @@
 
 ## Plan de Cambios Actuales
 
-**Objetivo:** Rediseñar la interfaz principal para separar el progreso a largo plazo del resumen diario, conectar la nueva pantalla de progreso con los datos reales del usuario y corregir los errores detectados por el analizador de código.
+**Objetivo:** Añadir el seguimiento del consumo de agua a la pantalla de progreso para que el usuario pueda ver su evolución semanal.
 
 **Pasos Realizados:**
-1.  **Creación de la Pantalla de Progreso (`progreso_screen.dart`):**
-    *   Se ha implementado una nueva pantalla para visualizar el progreso a largo plazo.
-    *   Incluye un **gráfico de barras** para la evolución del peso, conectado a la base de datos `body_measurements`.
-    *   Se ha añadido una tarjeta de **Resumen de Ejercicio Semanal**.
-2.  **Conexión del Resumen de Ejercicio con Datos Reales:**
-    *   La tarjeta de resumen ahora se conecta a la base de datos `routine_logs`.
-    *   Muestra dinámicamente el **número de entrenamientos** y el **tiempo total de entrenamiento** de la semana actual.
-3.  **Refactorización del Dashboard (`dashboard_screen.dart`):**
-    *   Se ha eliminado la sección de progreso del dashboard para enfocarlo en el resumen diario.
-4.  **Verificación de la Navegación (`main_screen.dart`):**
-    *   Se ha confirmado que la navegación principal con tres pestañas ("Inicio", "Menús", "Progreso") ya estaba correctamente implementada.
-5.  **Corrección de Errores de Análisis:**
-    *   Se ejecutó `flutter analyze` y se detectaron 3 problemas en `progreso_screen.dart`.
-    *   Se corrigió el uso del campo `duration` en el modelo `RoutineLog` (antes `durationInMinutes`), solucionando el error principal.
-    *   Se ajustó el código para resolver un error de tipo y una advertencia de estilo.
-    *   Se verificó con un segundo análisis que todos los problemas fueron resueltos.
+1.  **Análisis de la Pantalla de Progreso (`progreso_screen.dart`):**
+    *   Se ha revisado el código de la pantalla de progreso para entender su estructura actual, identificando las tarjetas de "Progreso de Peso" y "Resumen de Ejercicio Semanal".
+2.  **Examen del Modelo de Datos de Agua (`water_log.dart`):**
+    *   Se ha analizado el modelo `WaterLog` para comprender cómo se almacenan los datos del consumo de agua, confirmando la presencia de los campos `amount` y `timestamp`.
+3.  **Implementación de la Tarjeta de Consumo de Agua:**
+    *   Se ha añadido una nueva tarjeta (`_buildWaterIntakeCard`) a la pantalla de progreso (`progreso_screen.dart`).
+    *   Esta tarjeta muestra un **gráfico de barras** con el consumo de agua de los últimos 7 días.
+    *   Se ha utilizado un `ValueListenableBuilder` para escuchar los cambios en la caja de Hive `water_logs` y actualizar el gráfico en tiempo real.
 
 ---
 
@@ -56,3 +48,4 @@ Esta es una aplicación de fitness desarrollada en Flutter, diseñada para ayuda
 - **Funcionalidades Avanzadas para el Historial:** Se implementó el borrado de sesiones con gesto de deslizar, la opción de "Deshacer" y el filtrado por fecha.
 - **Mejora Visual del Historial:** Se rediseñó la pantalla del historial con tarjetas de resumen y un estado vacío mejorado.
 - **Corrección de UI en Biblioteca:** Se solucionó un error de botones flotantes duplicados y se mejoró la coherencia de la interfaz.
+- **Rediseño de la Interfaz Principal y Corrección de Errores:** Se rediseñó la interfaz principal para separar el progreso a largo plazo del resumen diario, se conectó la nueva pantalla de progreso con los datos reales del usuario y se corrigieron los errores detectados por el analizador de código.

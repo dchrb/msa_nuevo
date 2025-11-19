@@ -5,6 +5,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:myapp/models/body_measurement.dart';
 import 'package:myapp/models/routine_log.dart';
+import 'package:myapp/models/water_log.dart';
 import 'package:myapp/widgets/ui/watermark_image.dart';
 
 class ProgresoScreen extends StatelessWidget {
@@ -30,11 +31,97 @@ class ProgresoScreen extends StatelessWidget {
                 _buildWeightProgressCard(),
                 const SizedBox(height: 24),
                 _buildWorkoutSummaryCard(),
+                const SizedBox(height: 24),
+                _buildWaterIntakeCard(),
               ],
             ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildWaterIntakeCard() {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Consumo de Agua (Últimos 7 Días)', style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 150,
+              child: ValueListenableBuilder(
+                valueListenable: Hive.box<WaterLog>('water_logs').listenable(),
+                builder: (context, Box<WaterLog> box, _) {
+                  final today = DateTime.now();
+                  final recentDays = List.generate(7, (index) => today.subtract(Duration(days: index))).reversed.toList();
+                  final dailyTotals = recentDays.map((day) {
+                    final logsOnDay = box.values.where((log) =>
+                        log.timestamp.year == day.year &&
+                        log.timestamp.month == day.month &&
+                        log.timestamp.day == day.day);
+                    return logsOnDay.fold<double>(0, (sum, log) => sum + log.amount);
+                  }).toList();
+
+                  if (dailyTotals.every((total) => total == 0)) {
+                    return const Center(child: Text('No hay datos de consumo de agua.'));
+                  }
+
+                  return BarChart(
+                    BarChartData(
+                      alignment: BarChartAlignment.spaceAround,
+                      maxY: dailyTotals.reduce((a, b) => a > b ? a : b) + 500,
+                      barGroups: recentDays.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final day = entry.value;
+                        return BarChartGroupData(
+                          x: index,
+                          barRods: [
+                            BarChartRodData(
+                              toY: dailyTotals[index],
+                              color: Theme.of(context).colorScheme.secondary,
+                              width: 15,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ],
+                        );
+                      }).toList(),
+                      titlesData: FlTitlesData(
+                        leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 30,
+                            getTitlesWidget: (value, meta) {
+                              final index = value.toInt();
+                              if (index >= 0 && index < recentDays.length) {
+                                final date = recentDays[index];
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
+                                  child: Text('${date.day}/${date.month}', style: const TextStyle(fontSize: 10)),
+                                );
+                              }
+                              return const Text('');
+                            },
+                          ),
+                        ),
+                      ),
+                      gridData: const FlGridData(show: false),
+                      borderData: FlBorderData(show: false),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
