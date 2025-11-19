@@ -251,9 +251,9 @@ class FastingProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void stopFasting() {
+  Future<void> stopFasting() async {
     if (!isFasting) return;
-    
+
     final fastToStop = _currentFast!;
     // Cancel the scheduled notification
     _notificationService.cancelNotification(fastToStop.id.hashCode);
@@ -261,13 +261,20 @@ class FastingProvider with ChangeNotifier {
     final endTime = DateTime.now();
     final duration = endTime.difference(fastToStop.startTime);
 
-    if (duration.inHours < 1) {
-      _fastingBox.delete(fastToStop.id);
+    if (duration.inMinutes < 1) {
+      // No registramos ayunos que duren menos de 1 minuto
+      await _fastingBox.delete(fastToStop.id);
       _notificationService.showNotification(
-          0, 'Ayuno Cancelado', 'El ayuno fue demasiado corto para ser registrado.');
+          0,
+          'Ayuno Cancelado',
+          'El ayuno fue demasiado corto para ser registrado (menos de 1 minuto).');
     } else {
       fastToStop.endTime = endTime;
-      fastToStop.save();
+      try {
+        await fastToStop.save();
+      } catch (e) {
+        // If save fails, still proceed but log in devtools if needed
+      }
       final formatted = _formatDuration(duration);
       _notificationService.showNotification(0, '¡Ayuno Completado!',
           'Has completado un ayuno de $formatted. ¡Felicidades!');

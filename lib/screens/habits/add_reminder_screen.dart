@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:myapp/models/reminder.dart';
@@ -137,6 +138,26 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
       final notificationService = NotificationService();
       final remindersBox = Hive.box<Reminder>('reminders');
 
+      // Check for duplicates (same time + same days) except when editing the same reminder
+      final existingDuplicate = remindersBox.values.firstWhere(
+        (r) => r.id != (isEditing ? widget.reminder!.id : null) && r.hour == _selectedTime.hour && r.minute == _selectedTime.minute && listEquals(r.days, _selectedDays),
+        orElse: () => null as Reminder,
+      );
+      if (existingDuplicate != null) {
+        final proceed = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Duplicado detectado'),
+            content: const Text('Ya existe un recordatorio a la misma hora y días. ¿Deseas crear otro igual?'),
+            actions: [
+              TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancelar')),
+              TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Crear')),
+            ],
+          ),
+        );
+        if (proceed != true) return;
+      }
+
       // Cancel old notifications if editing
       if (isEditing) {
         await notificationService.cancelWeeklyNotifications(widget.reminder!.id.hashCode, widget.reminder!.days);
@@ -158,16 +179,38 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
 
       // Schedule new notifications if active
       if (reminder.isActive) {
-        await notificationService.scheduleWeeklyNotification(
-            reminder.id.hashCode, reminder.title, 'Es hora de tu hábito diario.', _selectedTime, _selectedDays);
+        try {
+          await notificationService.scheduleWeeklyNotification(
+              reminder.id.hashCode, reminder.title, 'Es hora de tu hábito diario.', _selectedTime, _selectedDays);
+        } catch (e, st) {
+          // If scheduling fails, deactivate the reminder and inform the user
+          await remindersBox.put(reminder.id, reminder.copyWith(isActive: false));
+          if (mounted) {
+            await showDialog<void>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Error al programar'),
+                content: Text('No se pudo programar la notificación: $e'),
+                actions: [
+                  TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Aceptar')),
+                ],
+              ),
+            );
+          }
+        }
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(isEditing
-                  ? 'Recordatorio actualizado'
-                  : 'Recordatorio guardado')),
+        // Show a dialog so the user clearly notices the confirmation
+        await showDialog<void>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(isEditing ? 'Recordatorio actualizado' : 'Recordatorio guardado'),
+            content: const Text('Tu recordatorio se guardó correctamente.'),
+            actions: [
+              TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Aceptar')),
+            ],
+          ),
         );
         Navigator.pop(context);
       }

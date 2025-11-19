@@ -22,6 +22,25 @@ class RemindersScreen extends StatelessWidget {
               ),
             ),
           ),
+          // Test notification button
+          IconButton(
+            icon: const Icon(Icons.notifications_active_outlined),
+            tooltip: 'Probar notificación',
+            onPressed: () async {
+              final notificationService = NotificationService();
+              // Mostrar notificación inmediata
+              await notificationService.showNotification(
+                  99999, 'Notificación de prueba', 'Esto es una notificación de prueba.');
+              // Programar una notificación dentro de 10 segundos para verificar scheduling
+              final scheduled = DateTime.now().add(const Duration(seconds: 10));
+              await notificationService.scheduleNotification(
+                  99998, 'Notificación programada', 'Programada para 10s', scheduled);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Notificación de prueba enviada')));
+              }
+            },
+          ),
         ],
       ),
       body: ValueListenableBuilder(

@@ -265,9 +265,29 @@ class _IntermittentFastingScreenState extends State<IntermittentFastingScreen> {
             ),
             ElevatedButton(
               child: const Text('Finalizar'),
-              onPressed: () {
-                provider.stopFasting();
-                Navigator.of(dialogContext).pop();
+              onPressed: () async {
+                // Espera a que el ayuno se finalice y se persista
+                await provider.stopFasting();
+                if (dialogContext.mounted) {
+                  Navigator.of(dialogContext).pop();
+                }
+
+                // Después de cerrar el diálogo, obtener el último registro
+                // y abrir el diálogo de edición para permitir ajustar horas.
+                if (context.mounted) {
+                  final history = provider.fastingHistory;
+                  if (history.isNotEmpty) {
+                    final latest = history.first;
+                    // Solo abrir editor si tiene endTime (registro guardado)
+                    if (latest.endTime != null) {
+                      // Pequeño post-frame para asegurar que el dialogo anterior
+                      // ya fue cerrado y el contexto está estable.
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        _showEditDialog(context, latest, provider);
+                      });
+                    }
+                  }
+                }
               },
             ),
           ],

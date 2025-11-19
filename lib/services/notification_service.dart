@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -19,7 +20,7 @@ class NotificationService {
 
   Future<void> init() async {
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+      AndroidInitializationSettings('@mipmap/launcher_icon');
 
     const DarwinInitializationSettings initializationSettingsIOS =
         DarwinInitializationSettings(
@@ -39,6 +40,31 @@ class NotificationService {
 
     await flutterLocalNotificationsPlugin.initialize(initializationSettings);
     await _requestPermissions();
+    // Create Android notification channels explicitly so sound/vibration
+    // settings are applied even on API levels that cache channel settings.
+    final androidPlugin =
+        flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+
+    const AndroidNotificationChannel weeklyChannel = AndroidNotificationChannel(
+      'weekly_notification_channel',
+      'Weekly Notifications',
+      description: 'Weekly reminder notifications',
+      importance: Importance.max,
+      playSound: true,
+    );
+
+    const AndroidNotificationChannel scheduledChannel = AndroidNotificationChannel(
+      'scheduled_notification_channel',
+      'Scheduled Notifications',
+      description: 'Scheduled reminder notifications',
+      importance: Importance.max,
+      playSound: true,
+    );
+
+    await androidPlugin?.createNotificationChannel(weeklyChannel);
+    await androidPlugin?.createNotificationChannel(scheduledChannel);
+    developer.log('Notification channels created (weekly/scheduled)', name: 'NotificationService.init');
   }
 
   Future<void> _requestPermissions() async {
@@ -52,6 +78,7 @@ class NotificationService {
     String title,
     String body,
   ) async {
+    developer.log('showNotification called id=$id title=$title', name: 'NotificationService.showNotification');
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
       'fasting_channel',
@@ -60,6 +87,8 @@ class NotificationService {
       importance: Importance.max,
       priority: Priority.high,
       showWhen: false,
+      playSound: true,
+      enableVibration: true,
     );
     const NotificationDetails platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
@@ -73,6 +102,7 @@ class NotificationService {
 
   Future<void> scheduleNotification(
       int id, String title, String body, DateTime scheduledTime) async {
+    developer.log('scheduleNotification called id=$id scheduledTime=$scheduledTime', name: 'NotificationService.scheduleNotification');
     await flutterLocalNotificationsPlugin.zonedSchedule(
       id,
       title,
@@ -85,8 +115,10 @@ class NotificationService {
           channelDescription: 'Scheduled reminder notifications',
           importance: Importance.max,
           priority: Priority.high,
+          playSound: true,
+          enableVibration: true,
         ),
-         iOS: DarwinNotificationDetails(),
+         iOS: DarwinNotificationDetails(presentSound: true, presentAlert: true, presentBadge: true),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
@@ -99,6 +131,7 @@ class NotificationService {
     TimeOfDay time,
     List<bool> days,
   ) async {
+    developer.log('scheduleWeeklyNotification called baseId=$baseId time=${time.hour}:${time.minute}', name: 'NotificationService.scheduleWeeklyNotification');
     for (int i = 0; i < days.length; i++) {
       if (days[i]) {
         final dayIndex = i + 1; // flutter_local_notifications uses 1 for Monday, 7 for Sunday
@@ -116,7 +149,10 @@ class NotificationService {
               channelDescription: 'Weekly reminder notifications',
               importance: Importance.max,
               priority: Priority.high,
+              playSound: true,
+              enableVibration: true,
             ),
+            iOS: DarwinNotificationDetails(presentSound: true),
           ),
           androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
           matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
