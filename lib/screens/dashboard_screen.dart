@@ -61,7 +61,7 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(height: 24),
               _buildTrainingCard(context),
               const SizedBox(height: 24),
-              _buildDailyProgressRings(),
+              _buildDailyProgressRings(context),
               const SizedBox(height: 24),
               _buildMotivationalCard(),
             ],
@@ -170,21 +170,44 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDailyProgressRings() {
+  Widget _buildDailyProgressRings(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+    final user = userProvider.user;
+    final dietPlan = user?.dietPlan ?? 'Mantener';
+
+    final Map<String, dynamic> planDetails = {
+      'Perder': {'icon': Icons.trending_down, 'color': Colors.orange.shade300},
+      'Mantener': {'icon': Icons.sync, 'color': Colors.green.shade300},
+      'Ganar': {'icon': Icons.trending_up, 'color': Colors.blue.shade300},
+      'Personalizado': {'icon': Icons.edit, 'color': Colors.purple.shade300},
+    };
+
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Progreso Diario', style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Progreso Diario', style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.bold)),
+                if (user != null && !user.isGuest)
+                  Chip(
+                    avatar: Icon(planDetails[dietPlan]?['icon'] ?? Icons.help, color: Colors.black87, size: 18),
+                    label: Text(dietPlan, style: GoogleFonts.lato(fontWeight: FontWeight.bold, color: Colors.black87)),
+                    backgroundColor: planDetails[dietPlan]?['color'] ?? Colors.grey.shade300,
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildCaloriesRing(),
+                _buildCaloriesRing(context),
                 _buildWaterRing(),
                 _buildTrainingRing(),
               ],
@@ -195,7 +218,10 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCaloriesRing() {
+  Widget _buildCaloriesRing(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final caloricGoal = userProvider.user?.calorieGoal ?? 2000;
+
     return ValueListenableBuilder(
       valueListenable: Hive.box<FoodLog>('food_logs').listenable(),
       builder: (context, Box<FoodLog> box, _) {
@@ -206,7 +232,6 @@ class DashboardScreen extends StatelessWidget {
 
         final dailyLogs = box.values.where((log) => isSameDay(log.date, now));
         final totalCalories = dailyLogs.fold<double>(0, (sum, log) => sum + log.calories);
-        const caloricGoal = 2200;
         final percent = (totalCalories / caloricGoal).clamp(0.0, 1.0);
 
         return Column(
@@ -221,7 +246,7 @@ class DashboardScreen extends StatelessWidget {
               circularStrokeCap: CircularStrokeCap.round,
             ),
             const SizedBox(height: 8),
-            Text('${totalCalories.toInt()} / $caloricGoal', style: GoogleFonts.lato(fontWeight: FontWeight.bold)),
+            Text('${totalCalories.toInt()} / ${caloricGoal.toInt()}', style: GoogleFonts.lato(fontWeight: FontWeight.bold)),
             Text('kcal', style: GoogleFonts.lato(color: Colors.grey)),
           ],
         );

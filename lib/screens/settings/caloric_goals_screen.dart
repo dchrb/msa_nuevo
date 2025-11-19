@@ -139,7 +139,7 @@ class _CaloricGoalsScreenState extends State<CaloricGoalsScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Text(
-              'Tu meta calórica se ajustará según el plan que elijas. Tu gasto diario estimado es de ${_tdee!.toStringAsFixed(0)} kcal.',
+              'Tu gasto diario estimado es de ${_tdee!.toStringAsFixed(0)} kcal. Selecciona un plan y aplica la meta.',
               textAlign: TextAlign.center,
               style: textTheme.bodyMedium,
             ),
@@ -386,16 +386,22 @@ class _CaloricGoalsScreenState extends State<CaloricGoalsScreen> {
             ),
             const SizedBox(height: 10),
             Text(
-              'Por favor, completa tu peso, altura y edad en la sección "Peso" para poder calcular tus metas calóricas.',
+              'Por favor, completa tu peso, altura y edad en la sección de Perfil para poder calcular tus metas calóricas.',
               textAlign: TextAlign.center,
               style: textTheme.bodyLarge,
             ),
             const SizedBox(height: 30),
             ElevatedButton(
               onPressed: () {
-                DefaultTabController.of(context).animateTo(1);
+                try {
+                    DefaultTabController.of(context).animateTo(1); 
+                } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Navega a la pestaña de Perfil para completar tus datos.'))
+                    );
+                }
               },
-              child: const Text('Completar mi Perfil'),
+              child: const Text('Ir a mi Perfil'),
             )
           ],
         ),

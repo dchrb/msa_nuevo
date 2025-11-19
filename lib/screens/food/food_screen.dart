@@ -56,7 +56,7 @@ class _FoodScreenState extends State<FoodScreen> with SingleTickerProviderStateM
             controller: _tabController,
             children: [
               FoodTodayScreen(onAddFoodLog: _addFoodLog),
-              const FoodLogListView(),
+              FoodLogListView(date: DateTime.now()),
             ],
           ),
         ),

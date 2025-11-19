@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:myapp/models/food_log.dart';
+import 'package:myapp/providers/user_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class FoodLogScreen extends StatefulWidget {
   final Function(FoodLog) onAddFoodLog;
@@ -72,6 +76,8 @@ class _FoodLogScreenState extends State<FoodLogScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                _buildCaloriesHeader(context),
+                const SizedBox(height: 24),
                 _buildTextField(_foodNameController, 'Nombre de la Comida'),
                 _buildTextField(_caloriesController, 'Calorías', isNumber: true),
                 _buildTextField(_proteinController, 'Proteínas (g)', isNumber: true),
@@ -95,6 +101,81 @@ class _FoodLogScreenState extends State<FoodLogScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildCaloriesHeader(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final user = userProvider.user;
+    final caloricGoal = user?.calorieGoal ?? 2000;
+    final dietPlan = user?.dietPlan ?? 'Mantener';
+
+    final Map<String, dynamic> planDetails = {
+      'Perder': {'icon': Icons.trending_down, 'color': Colors.orange.shade300},
+      'Mantener': {'icon': Icons.sync, 'color': Colors.green.shade300},
+      'Ganar': {'icon': Icons.trending_up, 'color': Colors.blue.shade300},
+      'Personalizado': {'icon': Icons.edit, 'color': Colors.purple.shade300},
+    };
+
+    return ValueListenableBuilder(
+      valueListenable: Hive.box<FoodLog>('food_logs').listenable(),
+      builder: (context, Box<FoodLog> box, _) {
+        final now = DateTime.now();
+        bool isSameDay(DateTime d1, DateTime d2) {
+          return d1.year == d2.year && d1.month == d2.month && d1.day == d2.day;
+        }
+
+        final dailyLogs = box.values.where((log) => isSameDay(log.date, now));
+        final totalCalories = dailyLogs.fold<double>(0, (sum, log) => sum + log.calories);
+        final remainingCalories = caloricGoal - totalCalories;
+
+        return Card(
+          elevation: 4,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                if (user != null && !user.isGuest)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: Chip(
+                      avatar: Icon(planDetails[dietPlan]?['icon'] ?? Icons.help, color: Colors.black87, size: 18),
+                      label: Text('Plan: $dietPlan', style: GoogleFonts.lato(fontWeight: FontWeight.bold, color: Colors.black87)),
+                      backgroundColor: planDetails[dietPlan]?['color'] ?? Colors.grey.shade300,
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    ),
+                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildCalorieInfo('Meta', caloricGoal.toInt(), Colors.blue),
+                    _buildCalorieInfo('Consumido', totalCalories.toInt(), Colors.orange),
+                    _buildCalorieInfo('Restante', remainingCalories.toInt(), Colors.green),
+                  ],
+                ),
+              ],
+            )
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCalorieInfo(String title, int value, Color color) {
+    return Column(
+      children: [
+        Text(title, style: GoogleFonts.lato(fontSize: 14, color: Colors.grey[600])),
+        const SizedBox(height: 4),
+        Text(
+          value.toString(),
+          style: GoogleFonts.montserrat(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+      ],
     );
   }
 
@@ -123,9 +204,6 @@ class _FoodLogScreenState extends State<FoodLogScreen> {
 
   Widget _buildMealTypeDropdown() {
     return DropdownButtonFormField<String>(
-      // Use `initialValue` to set the starting value of the form field.
-      // When `setState` is called, the widget rebuilds, and this `initialValue`
-      // is updated to reflect the current state of `_selectedMealType`.
       initialValue: _selectedMealType,
       decoration: InputDecoration(
         labelText: 'Tipo de Comida',
