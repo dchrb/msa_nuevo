@@ -495,7 +495,8 @@ class _ProgresoScreenState extends State<ProgresoScreen> {
           final weeklyLogs = box.values.where((log) => log.date.isAfter(startDate)).toList();
 
           final workoutsThisWeek = weeklyLogs.length;
-          final totalMinutes = weeklyLogs.fold<int>(0, (sum, log) => sum + (log.duration?.inMinutes ?? 0));
+          // CORRECCIÓN: Usar el campo correcto `durationInMinutes`
+          final totalMinutes = weeklyLogs.fold<int>(0, (sum, log) => sum + log.durationInMinutes);
           final timeSpent = formatDuration(totalMinutes);
 
           return Card(

@@ -5,7 +5,7 @@ import 'package:myapp/models/exercise_log.dart';
 import 'package:myapp/models/routine.dart';
 import 'package:myapp/models/routine_exercise.dart';
 import 'package:myapp/models/routine_log.dart';
-import 'package:myapp/models/set_log.dart'; // Importación añadida
+import 'package:myapp/models/set_log.dart';
 import 'package:myapp/models/workout_session.dart';
 import 'package:myapp/providers/exercise_provider.dart';
 import 'package:myapp/providers/routine_provider.dart';
@@ -23,7 +23,8 @@ class WorkoutScreen extends StatefulWidget {
 
 class _WorkoutScreenState extends State<WorkoutScreen> {
   late Map<int, List<SetLog?>> _setsData;
-  
+  late DateTime _startTime; // Para registrar el inicio del entreno
+
   Timer? _timer;
   int _countdownTime = 0;
   bool _isResting = false;
@@ -32,6 +33,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   @override
   void initState() {
     super.initState();
+    _startTime = DateTime.now(); // Se guarda la hora de inicio
     _setsData = {
       for (var i = 0; i < (widget.routine.exercises?.length ?? 0); i++)
         i: List.generate(widget.routine.exercises![i].sets, (_) => null)
@@ -44,7 +46,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     super.dispose();
   }
 
-  void _startRestTimer(int exerciseIndex, int restTimeInSeconds) {
+  // ... (el resto de los métodos como _startRestTimer, _cancelRestTimer, etc. se mantienen igual)
+void _startRestTimer(int exerciseIndex, int restTimeInSeconds) {
     if (restTimeInSeconds <= 0) return;
 
     _cancelRestTimer();
@@ -74,7 +77,6 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       _countdownTime = 0;
     });
   }
-
   @override
   Widget build(BuildContext context) {
     final exerciseProvider = Provider.of<ExerciseProvider>(context, listen: false);
@@ -287,7 +289,6 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   }
 
                   setState(() {
-                    // CORRECCIÓN: Usamos `weight ?? 0.0` para asegurar que no sea nulo
                     _setsData[exerciseIndex]![setIndex] = SetLog(reps: reps, weight: weight ?? 0.0);
                   });
                   Navigator.of(ctx).pop();
@@ -339,6 +340,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   Future<void> _finishWorkout({required BuildContext context}) async {
     _timer?.cancel();
 
+    final durationInMinutes = DateTime.now().difference(_startTime).inMinutes;
+
     final historyProvider = Provider.of<WorkoutHistoryProvider>(context, listen: false);
     final routineProvider = Provider.of<RoutineProvider>(context, listen: false);
     final exerciseProvider = Provider.of<ExerciseProvider>(context, listen: false);
@@ -351,12 +354,10 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       final List<SetLog> completedSets = logs.where((log) => log != null).cast<SetLog>().toList();
 
       if (exercise != null && completedSets.isNotEmpty) {
-        // Para el historial detallado
         performedExercisesForHistory.add(PerformedExerciseLog(
           exerciseName: exercise.name,
           sets: completedSets,
         ));
-        // Para el RoutineLog del dashboard
         exerciseLogsForRoutineLog.add(ExerciseLog(
           exercise: exercise,
           sets: completedSets,
@@ -373,19 +374,20 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       return;
     }
 
-    // Guardar en el historial detallado
+    // Guardar con la duración
     final newSession = WorkoutSession(
       routineName: widget.routine.name,
       date: DateTime.now(),
       performedExercises: performedExercisesForHistory,
+      durationInMinutes: durationInMinutes,
     );
     historyProvider.addWorkoutSession(newSession);
 
-    // Guardar el log para el dashboard
     final newLog = RoutineLog(
       routineName: widget.routine.name,
       date: DateTime.now(),
       exerciseLogs: exerciseLogsForRoutineLog,
+      durationInMinutes: durationInMinutes,
     );
     await routineProvider.addRoutineLog(newLog);
 

@@ -21,14 +21,14 @@ class RoutineLog extends HiveObject {
   String? notes;
 
   @HiveField(4)
-  Duration? duration;
+  int durationInMinutes; // Cambiado de Duration? a int
 
   RoutineLog({
     required this.date,
     required this.routineName,
     required this.exerciseLogs,
+    required this.durationInMinutes, // Añadido como requerido
     this.notes,
-    this.duration,
   });
 
   factory RoutineLog.fromJson(Map<String, dynamic> json) => _$RoutineLogFromJson(json);

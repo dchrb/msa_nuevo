@@ -20,8 +20,8 @@ class RoutineLogAdapter extends TypeAdapter<RoutineLog> {
       date: fields[0] as DateTime,
       routineName: fields[1] as String,
       exerciseLogs: (fields[2] as List).cast<ExerciseLog>(),
+      durationInMinutes: fields[4] as int,
       notes: fields[3] as String?,
-      duration: fields[4] as Duration?,
     );
   }
 
@@ -38,7 +38,7 @@ class RoutineLogAdapter extends TypeAdapter<RoutineLog> {
       ..writeByte(3)
       ..write(obj.notes)
       ..writeByte(4)
-      ..write(obj.duration);
+      ..write(obj.durationInMinutes);
   }
 
   @override
@@ -62,10 +62,8 @@ RoutineLog _$RoutineLogFromJson(Map<String, dynamic> json) => RoutineLog(
       exerciseLogs: (json['exerciseLogs'] as List<dynamic>)
           .map((e) => ExerciseLog.fromJson(e as Map<String, dynamic>))
           .toList(),
+      durationInMinutes: (json['durationInMinutes'] as num).toInt(),
       notes: json['notes'] as String?,
-      duration: json['duration'] == null
-          ? null
-          : Duration(microseconds: (json['duration'] as num).toInt()),
     );
 
 Map<String, dynamic> _$RoutineLogToJson(RoutineLog instance) =>
@@ -74,5 +72,5 @@ Map<String, dynamic> _$RoutineLogToJson(RoutineLog instance) =>
       'routineName': instance.routineName,
       'exerciseLogs': instance.exerciseLogs.map((e) => e.toJson()).toList(),
       'notes': instance.notes,
-      'duration': instance.duration?.inMicroseconds,
+      'durationInMinutes': instance.durationInMinutes,
     };

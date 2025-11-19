@@ -45,6 +45,13 @@ void main() async {
   await initializeDateFormatting('es', null);
   await Hive.initFlutter();
 
+  // *** INICIO DE LA SOLUCIÓN DEL ERROR (Intento 2) ***
+  // Borramos la caja del disco para forzar una recreación y evitar errores de
+  // deserialización por cambio de modelo de datos.
+  await Hive.deleteBoxFromDisk('routine_logs');
+  developer.log('Caja [routine_logs] eliminada del disco para migración forzada.', name: 'main.startup');
+  // *** FIN DE LA SOLUCIÓN DEL ERROR ***
+
   _registerHiveAdapters();
   await _openHiveBoxes();
 
