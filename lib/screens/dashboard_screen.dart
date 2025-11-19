@@ -3,32 +3,70 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:myapp/models/food_log.dart';
+import 'package:myapp/models/routine.dart';
 import 'package:myapp/models/water_log.dart';
 import 'package:myapp/models/routine_log.dart';
+import 'package:myapp/screens/training/workout_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/providers/user_provider.dart';
-import 'package:myapp/widgets/ui/watermark_image.dart';
 import 'package:percent_indicator/percent_indicator.dart';
+import 'package:intl/intl.dart';
+import 'dart:math';
+import 'package:myapp/data/motivational_quotes.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) {
+      return 'Buenos días';
+    }
+    if (hour < 18) {
+      return 'Buenas tardes';
+    }
+    return 'Buenas noches';
+  }
+
+  String _getMotivationalQuote() {
+    final random = Random();
+    return motivationalQuotes[random.nextInt(motivationalQuotes.length)];
+  }
+
+  String _getTodayRoutineName() {
+    final dayOfWeek = DateFormat('EEEE', 'es_ES').format(DateTime.now());
+    switch (dayOfWeek.toLowerCase()) {
+      case 'lunes':
+        return 'Cuerpo Completo A';
+      case 'miércoles':
+        return 'Cuerpo Completo B';
+      case 'viernes':
+        return 'Cuerpo Completo A';
+      case 'sábado':
+        return 'Cardio y Core';
+      default:
+        return 'Día de Descanso';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        const WatermarkImage(imageName: 'inicio'),
-        SingleChildScrollView(
+    return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
+       body: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
               _buildWelcomeHeader(context),
               const SizedBox(height: 24),
+              _buildTrainingCard(context),
+              const SizedBox(height: 24),
               _buildDailyProgressRings(),
+              const SizedBox(height: 24),
+              _buildMotivationalCard(),
             ],
           ),
         ),
-      ],
     );
   }
 
@@ -36,13 +74,8 @@ class DashboardScreen extends StatelessWidget {
     return Consumer<UserProvider>(
       builder: (context, userProvider, child) {
         final user = userProvider.user;
-
         return Container(
-          padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16.0),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primaryContainer.withAlpha((255 * 0.3).round()),
-            borderRadius: BorderRadius.circular(20),
-          ),
+          padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
           child: Row(
             children: [
               CircleAvatar(
@@ -61,20 +94,12 @@ class DashboardScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      user?.name ?? 'Invitado',
+                      '${_getGreeting()}, ${user?.name ?? 'Invitado'}',
                       style: GoogleFonts.montserrat(
-                          fontSize: 26,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onPrimaryContainer),
+                          color: Theme.of(context).colorScheme.onSurface),
                       overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Aquí está tu progreso de hoy',
-                      style: GoogleFonts.lato(
-                          fontSize: 16,
-                          color: Theme.of(context).colorScheme.onPrimaryContainer.withAlpha((255 * 0.8).round())),
-                      softWrap: true,
                     ),
                   ],
                 ),
@@ -83,6 +108,65 @@ class DashboardScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildTrainingCard(BuildContext context) {
+    final routineName = _getTodayRoutineName();
+    final isRestDay = routineName == 'Día de Descanso';
+
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: isRestDay ? Colors.grey[800] : Theme.of(context).colorScheme.primaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          children: [
+            Text(isRestDay ? '¡A recargar energías!' : 'Tu Reto de Hoy', 
+              style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.bold, color: isRestDay ? Colors.white : Theme.of(context).colorScheme.onPrimaryContainer)),
+            const SizedBox(height: 12),
+            Text(routineName, style: GoogleFonts.lato(fontSize: 24, fontWeight: FontWeight.w600, color: isRestDay ? Colors.white : Theme.of(context).colorScheme.onPrimaryContainer)),
+            if (!isRestDay)
+              Padding(
+                padding: const EdgeInsets.only(top: 20.0),
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.play_arrow_rounded),
+                  label: const Text('Comenzar'),
+                  onPressed: () {
+                     final routineBox = Hive.box<Routine>('routines');
+                     final routines = routineBox.values.where((r) => r.name == routineName);
+                     if (routines.isNotEmpty) {
+                        final routine = routines.first;
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => WorkoutScreen(routine: routine)));
+                     }
+                  },
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMotivationalCard() {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Text('Consejo del Día', style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text(
+              _getMotivationalQuote(),
+              style: GoogleFonts.lato(fontSize: 14, fontStyle: FontStyle.italic),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -122,27 +206,24 @@ class DashboardScreen extends StatelessWidget {
 
         final dailyLogs = box.values.where((log) => isSameDay(log.date, now));
         final totalCalories = dailyLogs.fold<double>(0, (sum, log) => sum + log.calories);
-        const caloricGoal = 2000;
+        const caloricGoal = 2200;
         final percent = (totalCalories / caloricGoal).clamp(0.0, 1.0);
 
-        return CircularPercentIndicator(
-          radius: 50.0,
-          lineWidth: 10.0,
-          percent: percent,
-          center: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.local_fire_department, color: Colors.orange, size: 30),
-              Text(
-                '${totalCalories.toInt()} kcal',
-                style: GoogleFonts.lato(fontSize: 14, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-          progressColor: Colors.orange,
-          backgroundColor: Colors.orange.shade100,
-          circularStrokeCap: CircularStrokeCap.round,
+        return Column(
+          children: [
+            CircularPercentIndicator(
+              radius: 45.0,
+              lineWidth: 10.0,
+              percent: percent,
+              center: Icon(Icons.local_fire_department, color: Colors.orange, size: 30),
+              progressColor: Colors.orange,
+              backgroundColor: Colors.orange.shade100,
+              circularStrokeCap: CircularStrokeCap.round,
+            ),
+            const SizedBox(height: 8),
+            Text('${totalCalories.toInt()} / $caloricGoal', style: GoogleFonts.lato(fontWeight: FontWeight.bold)),
+            Text('kcal', style: GoogleFonts.lato(color: Colors.grey)),
+          ],
         );
       },
     );
@@ -159,27 +240,24 @@ class DashboardScreen extends StatelessWidget {
 
         final dailyLogs = box.values.where((log) => isSameDay(log.timestamp, now));
         final totalWater = dailyLogs.fold<double>(0, (sum, log) => sum + log.amount);
-        const waterGoal = 2000; // in ml
+        const waterGoal = 2500; // in ml
         final percent = (totalWater / waterGoal).clamp(0.0, 1.0);
 
-        return CircularPercentIndicator(
-          radius: 50.0,
-          lineWidth: 10.0,
-          percent: percent,
-          center: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.water_drop, color: Colors.blue, size: 30),
-              Text(
-                '${totalWater.toInt()} ml',
-                style: GoogleFonts.lato(fontSize: 14, fontWeight: FontWeight.bold),
-                 textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-          progressColor: Colors.blue,
-          backgroundColor: Colors.blue.shade100,
-          circularStrokeCap: CircularStrokeCap.round,
+        return Column(
+          children: [
+            CircularPercentIndicator(
+              radius: 45.0,
+              lineWidth: 10.0,
+              percent: percent,
+              center: Icon(Icons.water_drop, color: Colors.blue, size: 30),
+              progressColor: Colors.blue,
+              backgroundColor: Colors.blue.shade100,
+              circularStrokeCap: CircularStrokeCap.round,
+            ),
+            const SizedBox(height: 8),
+            Text('${totalWater.toInt()} / $waterGoal', style: GoogleFonts.lato(fontWeight: FontWeight.bold)),
+            Text('ml', style: GoogleFonts.lato(color: Colors.grey)),
+          ],
         );
       },
     );
@@ -197,24 +275,21 @@ class DashboardScreen extends StatelessWidget {
         final trainedToday = box.values.any((log) => isSameDay(log.date, now));
         final percent = trainedToday ? 1.0 : 0.0;
 
-        return CircularPercentIndicator(
-          radius: 50.0,
-          lineWidth: 10.0,
-          percent: percent,
-          center: Column(
-             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.fitness_center, color: Colors.green, size: 30),
-               Text(
-                trainedToday ? '¡Hecho!' : 'Pendiente',
-                style: GoogleFonts.lato(fontSize: 14, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-          progressColor: Colors.green,
-          backgroundColor: Colors.green.shade100,
-          circularStrokeCap: CircularStrokeCap.round,
+        return Column(
+          children: [
+            CircularPercentIndicator(
+              radius: 45.0,
+              lineWidth: 10.0,
+              percent: percent,
+              center: Icon(Icons.fitness_center, color: Colors.green, size: 30),
+              progressColor: Colors.green,
+              backgroundColor: Colors.green.shade100,
+              circularStrokeCap: CircularStrokeCap.round,
+            ),
+            const SizedBox(height: 8),
+            Text(trainedToday ? '¡Hecho!' : 'Pendiente', style: GoogleFonts.lato(fontWeight: FontWeight.bold)),
+            Text('Hoy', style: GoogleFonts.lato(color: Colors.grey)),
+          ],
         );
       },
     );
