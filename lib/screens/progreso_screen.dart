@@ -8,8 +8,15 @@ import 'package:myapp/models/routine_log.dart';
 import 'package:myapp/models/water_log.dart';
 import 'package:myapp/widgets/ui/watermark_image.dart';
 
-class ProgresoScreen extends StatelessWidget {
+class ProgresoScreen extends StatefulWidget {
   const ProgresoScreen({super.key});
+
+  @override
+  State<ProgresoScreen> createState() => _ProgresoScreenState();
+}
+
+class _ProgresoScreenState extends State<ProgresoScreen> {
+  String _selectedPeriod = 'Últimos 7 Días';
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +35,11 @@ class ProgresoScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
+                _buildDateFilter(),
+                const SizedBox(height: 24),
                 _buildWeightProgressCard(),
+                const SizedBox(height: 24),
+                _buildBodyMeasurementCard(),
                 const SizedBox(height: 24),
                 _buildWorkoutSummaryCard(),
                 const SizedBox(height: 24),
@@ -41,6 +52,123 @@ class ProgresoScreen extends StatelessWidget {
     );
   }
 
+    Widget _buildBodyMeasurementCard() {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Medidas Corporales ($_selectedPeriod)', style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 200,
+              child: ValueListenableBuilder(
+                valueListenable: Hive.box<BodyMeasurement>('body_measurements').listenable(),
+                builder: (context, Box<BodyMeasurement> box, _) {
+                   final now = DateTime.now();
+                  DateTime startDate;
+                  switch (_selectedPeriod) {
+                    case 'Último Mes':
+                      startDate = now.subtract(const Duration(days: 30));
+                      break;
+                    case 'Último Año':
+                      startDate = now.subtract(const Duration(days: 365));
+                      break;
+                    default:
+                      startDate = now.subtract(const Duration(days: 7));
+                  }
+
+                  final measurements = box.values.where((m) => m.timestamp.isAfter(startDate)).toList()
+                    ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+
+                  if (measurements.length < 2) {
+                    return const Center(child: Text('No hay suficientes datos de medidas corporales.'));
+                  }
+
+                  final first = measurements.first;
+                  final last = measurements.last;
+
+                  final data = [
+                    last.chest ?? 0,
+                    last.arm ?? 0,
+                    last.waist ?? 0,
+                    last.hips ?? 0,
+                    last.thigh ?? 0,
+                  ];
+
+                  final initialData = [
+                    first.chest ?? 0,
+                    first.arm ?? 0,
+                    first.waist ?? 0,
+                    first.hips ?? 0,
+                    first.thigh ?? 0,
+                  ];
+
+
+                  return RadarChart(
+                    RadarChartData(
+                      dataSets: [
+                        RadarDataSet(
+                          dataEntries: initialData.map((d) => RadarEntry(value: d)).toList(),
+                          borderColor: Colors.grey,
+                          borderWidth: 1,
+                        ),
+                        RadarDataSet(
+                          dataEntries: data.map((d) => RadarEntry(value: d)).toList(),
+                          borderColor: Theme.of(context).colorScheme.primary,
+                          fillColor: Theme.of(context).colorScheme.primary.withAlpha(100),
+                          borderWidth: 2,
+                        ),
+                      ],
+                      tickCount: 5,
+                      ticksTextStyle: const TextStyle(color: Colors.transparent, fontSize: 10),
+                      getTitle: (index, angle) {
+                        final titles = ['Pecho', 'Brazo', 'Cintura', 'Cadera', 'Muslo'];
+                        return RadarChartTitle(text: titles[index], angle: angle);
+                      },
+                      gridBorderData: const BorderSide(color: Colors.grey, width: 1),
+                      radarShape: RadarShape.circle,
+                      radarBackgroundColor: Colors.transparent,
+                      borderData: FlBorderData(show: false),
+                      radarBorderData: const BorderSide(color: Colors.transparent),
+                      tickBorderData: const BorderSide(color: Colors.transparent),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDateFilter() {
+    final periods = ['Últimos 7 Días', 'Último Mes', 'Último Año'];
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: periods.map((period) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+          child: ChoiceChip(
+            label: Text(period),
+            selected: _selectedPeriod == period,
+            onSelected: (selected) {
+              if (selected) {
+                setState(() {
+                  _selectedPeriod = period;
+                });
+              }
+            },
+          ),
+        );
+      }).toList(),
+    );
+  }
+
   Widget _buildWaterIntakeCard() {
     return Card(
       elevation: 4,
@@ -50,39 +178,52 @@ class ProgresoScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Consumo de Agua (Últimos 7 Días)', style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text('Consumo de Agua ($_selectedPeriod)', style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             SizedBox(
               height: 150,
               child: ValueListenableBuilder(
                 valueListenable: Hive.box<WaterLog>('water_logs').listenable(),
                 builder: (context, Box<WaterLog> box, _) {
-                  final today = DateTime.now();
-                  final recentDays = List.generate(7, (index) => today.subtract(Duration(days: index))).reversed.toList();
-                  final dailyTotals = recentDays.map((day) {
-                    final logsOnDay = box.values.where((log) =>
-                        log.timestamp.year == day.year &&
-                        log.timestamp.month == day.month &&
-                        log.timestamp.day == day.day);
-                    return logsOnDay.fold<double>(0, (sum, log) => sum + log.amount);
-                  }).toList();
+                  final now = DateTime.now();
+                  DateTime startDate;
+                  switch (_selectedPeriod) {
+                    case 'Último Mes':
+                      startDate = now.subtract(const Duration(days: 30));
+                      break;
+                    case 'Último Año':
+                      startDate = now.subtract(const Duration(days: 365));
+                      break;
+                    default:
+                      startDate = now.subtract(const Duration(days: 7));
+                  }
 
-                  if (dailyTotals.every((total) => total == 0)) {
+                  final logs = box.values.where((log) => log.timestamp.isAfter(startDate)).toList();
+                  
+                  if (logs.isEmpty) {
                     return const Center(child: Text('No hay datos de consumo de agua.'));
                   }
+
+                  final dailyTotals = <DateTime, double>{};
+                  for (var log in logs) {
+                    final day = DateTime(log.timestamp.year, log.timestamp.month, log.timestamp.day);
+                    dailyTotals[day] = (dailyTotals[day] ?? 0) + log.amount;
+                  }
+                  
+                  final chartData = dailyTotals.entries.toList()..sort((a,b) => a.key.compareTo(b.key));
 
                   return BarChart(
                     BarChartData(
                       alignment: BarChartAlignment.spaceAround,
-                      maxY: dailyTotals.reduce((a, b) => a > b ? a : b) + 500,
-                      barGroups: recentDays.asMap().entries.map((entry) {
+                      maxY: chartData.map((e) => e.value).reduce((a,b) => a > b ? a : b) + 500,
+                      barGroups: chartData.asMap().entries.map((entry) {
                         final index = entry.key;
-                        final day = entry.value;
+                        final data = entry.value;
                         return BarChartGroupData(
                           x: index,
                           barRods: [
                             BarChartRodData(
-                              toY: dailyTotals[index],
+                              toY: data.value,
                               color: Theme.of(context).colorScheme.secondary,
                               width: 15,
                               borderRadius: BorderRadius.circular(4),
@@ -100,8 +241,8 @@ class ProgresoScreen extends StatelessWidget {
                             reservedSize: 30,
                             getTitlesWidget: (value, meta) {
                               final index = value.toInt();
-                              if (index >= 0 && index < recentDays.length) {
-                                final date = recentDays[index];
+                              if (index >= 0 && index < chartData.length) {
+                                final date = chartData[index].key;
                                 return Padding(
                                   padding: const EdgeInsets.only(top: 8.0),
                                   child: Text('${date.day}/${date.month}', style: const TextStyle(fontSize: 10)),
@@ -134,52 +275,48 @@ class ProgresoScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Progreso de Peso (Últimos 7 Días)', style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text('Progreso de Peso ($_selectedPeriod)', style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             SizedBox(
               height: 150,
               child: ValueListenableBuilder(
                 valueListenable: Hive.box<BodyMeasurement>('body_measurements').listenable(),
                 builder: (context, Box<BodyMeasurement> box, _) {
-                  if (box.values.length < 2) {
+                  final now = DateTime.now();
+                  DateTime startDate;
+                  switch (_selectedPeriod) {
+                    case 'Último Mes':
+                      startDate = now.subtract(const Duration(days: 30));
+                      break;
+                    case 'Último Año':
+                      startDate = now.subtract(const Duration(days: 365));
+                      break;
+                    default:
+                      startDate = now.subtract(const Duration(days: 7));
+                  }
+
+                  final measurements = box.values.where((m) => m.timestamp.isAfter(startDate)).toList()
+                    ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+
+                  if (measurements.length < 2) {
                     return const Center(child: Text('No hay suficientes datos para mostrar el progreso.'));
                   }
 
-                  final measurements = box.values.toList()..sort((a, b) => a.timestamp.compareTo(b.timestamp));
-                  final recentMeasurements = measurements.length > 7 ? measurements.sublist(measurements.length - 7) : measurements;
-
-                  return BarChart(
-                    BarChartData(
-                      alignment: BarChartAlignment.spaceAround,
-                      maxY: recentMeasurements.map((m) => m.weight ?? 0).reduce((a, b) => a > b ? a : b) + 5,
-                      minY: recentMeasurements.map((m) => m.weight ?? 0).reduce((a, b) => a < b ? a : b) - 5,
-                      barGroups: recentMeasurements.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final measurement = entry.value;
-                        return BarChartGroupData(
-                          x: index,
-                          barRods: [
-                            BarChartRodData(
-                              toY: measurement.weight ?? 0,
-                              color: Theme.of(context).colorScheme.primary,
-                              width: 15,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ],
-                        );
-                      }).toList(),
+                  return LineChart(
+                    LineChartData(
+                      gridData: const FlGridData(show: false),
                       titlesData: FlTitlesData(
                         leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                         topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                         rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        bottomTitles: AxisTitles(
+                         bottomTitles: AxisTitles(
                           sideTitles: SideTitles(
                             showTitles: true,
                             reservedSize: 30,
                             getTitlesWidget: (value, meta) {
                               final index = value.toInt();
-                              if (index >= 0 && index < recentMeasurements.length) {
-                                final date = recentMeasurements[index].timestamp;
+                              if (index >= 0 && index < measurements.length) {
+                                final date = measurements[index].timestamp;
                                 return Padding(
                                   padding: const EdgeInsets.only(top: 8.0),
                                   child: Text('${date.day}/${date.month}', style: const TextStyle(fontSize: 10)),
@@ -190,8 +327,18 @@ class ProgresoScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      gridData: const FlGridData(show: false),
                       borderData: FlBorderData(show: false),
+                      lineBarsData: [
+                        LineChartBarData(
+                           spots: measurements.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.weight ?? 0)).toList(),
+                          isCurved: true,
+                          color: Theme.of(context).colorScheme.primary,
+                          barWidth: 4,
+                          isStrokeCapRound: true,
+                          dotData: const FlDotData(show: true),
+                          belowBarData: BarAreaData(show: true, color: Theme.of(context).colorScheme.primary.withAlpha(100)),
+                        ),
+                      ],
                     ),
                   );
                 },
@@ -214,14 +361,23 @@ class ProgresoScreen extends StatelessWidget {
         valueListenable: Hive.box<RoutineLog>('routine_logs').listenable(),
         builder: (context, Box<RoutineLog> box, _) {
           final now = DateTime.now();
-          final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
-          final endOfWeek = startOfWeek.add(const Duration(days: 6));
+          DateTime startDate;
+          String periodText;
+          switch (_selectedPeriod) {
+            case 'Último Mes':
+              startDate = now.subtract(const Duration(days: 30));
+              periodText = 'en el último mes';
+              break;
+            case 'Último Año':
+              startDate = now.subtract(const Duration(days: 365));
+               periodText = 'en el último año';
+              break;
+            default:
+              startDate = now.subtract(const Duration(days: 7));
+              periodText = 'en los últimos 7 días';
+          }
 
-          final weeklyLogs = box.values.where((log) {
-            final logDate = log.date;
-            return logDate.isAfter(startOfWeek.subtract(const Duration(days: 1))) &&
-                   logDate.isBefore(endOfWeek.add(const Duration(days: 1)));
-          }).toList();
+          final weeklyLogs = box.values.where((log) => log.date.isAfter(startDate)).toList();
 
           final workoutsThisWeek = weeklyLogs.length;
           final totalMinutes = weeklyLogs.fold<int>(0, (sum, log) => sum + (log.duration?.inMinutes ?? 0));
@@ -235,7 +391,7 @@ class ProgresoScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Resumen de Ejercicio Semanal', style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text('Resumen de Ejercicio ($periodText)', style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -243,13 +399,13 @@ class ProgresoScreen extends StatelessWidget {
                       Column(
                         children: [
                           Text(workoutsThisWeek.toString(), style: GoogleFonts.montserrat(fontSize: 28, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
-                          Text('Entrenos esta semana', style: GoogleFonts.lato()),
+                          const Text('Entrenamientos'),
                         ],
                       ),
                       Column(
                         children: [
                           Text(timeSpent, style: GoogleFonts.montserrat(fontSize: 28, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
-                          Text('Tiempo total', style: GoogleFonts.lato()),
+                          const Text('Tiempo total'),
                         ],
                       ),
                     ],
