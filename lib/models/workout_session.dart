@@ -4,14 +4,18 @@ import 'package:uuid/uuid.dart';
 // Representa los datos registrados para una sola serie de un ejercicio.
 class SetLog {
   final int reps;
-  final double weight;
+  final double? weight; // Change: Made weight optional
 
-  SetLog({required this.reps, required this.weight});
+  SetLog({required this.reps, this.weight}); // Change: Updated constructor
 
   @override
   String toString() {
     // Ayudante para formatear la cadena de salida
-    return '$reps reps con $weight kg';
+    if (weight != null) {
+        return '$reps reps con $weight kg';
+    } else {
+        return '$reps reps';
+    }
   }
 }
 

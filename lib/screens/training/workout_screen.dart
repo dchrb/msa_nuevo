@@ -267,7 +267,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               ),
               TextField(
                 controller: weightController,
-                decoration: const InputDecoration(labelText: 'Peso (kg)', icon: Icon(Icons.fitness_center)),
+                decoration: const InputDecoration(labelText: 'Peso (kg) (Opcional)', icon: Icon(Icons.fitness_center)),
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
               ),
             ],
@@ -281,8 +281,17 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               child: const Text('Guardar'),
               onPressed: () {
                 final int? reps = int.tryParse(repsController.text);
-                final double? weight = double.tryParse(weightController.text);
-                if (reps != null && weight != null) {
+                final String weightText = weightController.text;
+                final double? weight = weightText.isEmpty ? null : double.tryParse(weightText);
+
+                if (reps != null) {
+                   if (weightText.isNotEmpty && weight == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('El peso introducido no es un número válido.')),
+                    );
+                    return;
+                  }
+
                   setState(() {
                     _setsData[exerciseIndex]![setIndex] = SetLog(reps: reps, weight: weight);
                   });
@@ -291,13 +300,13 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   // Iniciar el temporizador después de guardar una serie
                   // Solo si no es la última serie del ejercicio
                   final bool isLastSet = setIndex == routineExercise.sets - 1;
-                  if (!isLastSet) {
-                    _startRestTimer(exerciseIndex, routineExercise.restTime ?? 60);
+                  if (!isLastSet && routineExercise.restTime != null && routineExercise.restTime! > 0) {
+                    _startRestTimer(exerciseIndex, routineExercise.restTime!);
                   }
 
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Por favor, introduce valores numéricos válidos.')),
+                    const SnackBar(content: Text('Por favor, introduce un número válido de repeticiones.')),
                   );
                 }
               },
